@@ -898,12 +898,10 @@ const Search = () => {
                 textAlign: "center",
                 padding: "3rem",
                 fontSize: "18px",
-                color: "#666",
+                color: "white",
               }}
             >
               Brak ogłoszeń spełniających kryteria wyszukiwania
-              <br />
-              <small>Wybrane filtry: {JSON.stringify(selectedServices)}</small>
             </div>
           )}
 

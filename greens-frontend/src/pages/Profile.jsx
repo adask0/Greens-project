@@ -4,12 +4,8 @@ import "../styles/profile.css";
 import api from "../services/api";
 import CommentsSection from "./CommentsSection";
 
-// Import assets - popraw ścieżki jeśli potrzeba
+// Import tylko fallback assets dla avatara i ikon social media
 import Avatar from "../assets/Avatar.png";
-import person1 from "../assets/person1.png";
-import person2 from "../assets/person2.png";
-import person3 from "../assets/person3.png";
-import person4 from "../assets/person4.png";
 import facebookIcon from "../assets/facebook.svg";
 import instagramIcon from "../assets/instagram.svg";
 import linkedinIcon from "../assets/linkedin.svg";
@@ -25,15 +21,6 @@ const Profile = () => {
     phone: false,
     email: false,
   });
-
-  // Mapa obrazków
-  const imageMap = {
-    "../assets/Avatar.png": Avatar,
-    "../assets/person1.png": person1,
-    "../assets/person2.png": person2,
-    "../assets/person3.png": person3,
-    "../assets/person4.png": person4,
-  };
 
   // Mapa ikon social media
   const iconMap = {
@@ -52,9 +39,52 @@ const Profile = () => {
       setLoading(true);
       setError(null);
 
+      console.log("=== FETCHING LISTING ===");
+      console.log("Listing ID:", id);
+
       const response = await api.get(`/listings/${id}`);
+      console.log("Listing response:", response.data);
 
       let listingData = response.data?.data || response.data;
+
+      // Parsuj zdjęcia z bazy danych
+      let images = [];
+      try {
+        if (listingData.images) {
+          console.log("Raw images from DB:", listingData.images);
+
+          // Jeśli images to string JSON, sparsuj go
+          if (typeof listingData.images === 'string') {
+            const parsedImages = JSON.parse(listingData.images);
+            console.log("Parsed images array:", parsedImages);
+
+            // Konwertuj nazwy plików na pełne URL-e
+            images = parsedImages.map(filename => {
+              // Usuń slashe z początku jeśli są
+              const cleanFilename = filename.replace(/^\/+/, '');
+              return `http://localhost:8000/storage/listings/${cleanFilename}`;
+            });
+          } else if (Array.isArray(listingData.images)) {
+            // Jeśli już jest tablicą
+            images = listingData.images.map(img => {
+              if (img.startsWith('http')) {
+                return img;
+              }
+              if (img.startsWith('/storage')) {
+                return `http://localhost:8000${img}`;
+              }
+              const cleanFilename = img.replace(/^\/+/, '');
+              return `http://localhost:8000/storage/listings/${cleanFilename}`;
+            });
+          }
+        }
+
+        console.log("Final processed images:", images);
+      } catch (imageError) {
+        console.error("Error parsing images:", imageError);
+        console.error("Raw images data:", listingData.images);
+        images = []; // Fallback do pustej tablicy
+      }
 
       // Mapowanie danych z API na format używany w komponencie
       const mappedListing = {
@@ -71,7 +101,7 @@ const Profile = () => {
         rating: listingData.rating || (Math.random() * 2 + 3).toFixed(1),
         location: listingData.location || "Warszawa",
         companyName: listingData.company_name || "Firma",
-        avatar: "../assets/Avatar.png",
+        avatar: listingData.avatar || Avatar,
         phone: listingData.phone || "+48 123 456 789",
         email: listingData.email || "kontakt@firma.pl",
         tags: [
@@ -82,11 +112,7 @@ const Profile = () => {
         experience:
           listingData.experience ||
           `${Math.floor(Math.random() * 15) + 3} lat doświadczenia`,
-        images: [
-          "../assets/person1.png",
-          "../assets/person2.png",
-          "../assets/person3.png",
-        ],
+        images: images, // Tylko zdjęcia z bazy danych
         socialMedia: {
           facebook: listingData.facebook_url || "",
           instagram: listingData.instagram_url || "",
@@ -100,11 +126,13 @@ const Profile = () => {
         published_at: listingData.published_at,
       };
 
+      console.log("Mapped listing:", mappedListing);
       setListing(mappedListing);
 
       // Zwiększ licznik kliknięć
       try {
         await api.post(`/listings/${id}/increment-clicks`);
+        console.log("Click counter incremented");
       } catch (clickError) {
         console.error(
           "Błąd podczas zwiększania licznika kliknięć:",
@@ -153,15 +181,19 @@ const Profile = () => {
   };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === listing.images.length - 1 ? 0 : prev + 1
-    );
+    if (listing.images && listing.images.length > 0) {
+      setCurrentImageIndex((prev) =>
+        prev === listing.images.length - 1 ? 0 : prev + 1
+      );
+    }
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) =>
-      prev === 0 ? listing.images.length - 1 : prev - 1
-    );
+    if (listing.images && listing.images.length > 0) {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? listing.images.length - 1 : prev - 1
+      );
+    }
   };
 
   const handleContactClick = (type) => {
@@ -195,6 +227,13 @@ const Profile = () => {
     });
 
     return socialIcons.length > 0 ? socialIcons : null;
+  };
+
+  // Funkcja do obsługi błędów ładowania obrazków
+  const handleImageError = (e) => {
+    console.error("Error loading image:", e.target.src);
+    // Ukryj obrazek, który się nie załadował
+    e.target.style.display = 'none';
   };
 
   if (loading) {
@@ -270,9 +309,10 @@ const Profile = () => {
 
               <div className="profile-avatar-container">
                 <img
-                  src={imageMap[listing.avatar] || Avatar}
+                  src={listing.avatar.startsWith('http') || listing.avatar.startsWith('/') ? listing.avatar : Avatar}
                   alt={listing.companyName}
                   className="profile-avatar"
+                  onError={(e) => { e.target.src = Avatar; }}
                 />
               </div>
 
@@ -324,58 +364,76 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Galeria zdjęć NA DOLE */}
-            <div className="profile-gallery">
-              <div className="profile-gallery-main">
-                <button className="gallery-nav-btn prev" onClick={prevImage}>
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M15 18l-6-6 6-6" />
-                  </svg>
-                </button>
+            {/* Galeria zdjęć - wyświetla się tylko gdy są zdjęcia z bazy danych */}
+            {listing.images && listing.images.length > 0 && (
+              <div className="profile-gallery">
+                <div className="profile-gallery-main">
+                  {listing.images.length > 1 && (
+                    <button className="gallery-nav-btn prev" onClick={prevImage}>
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M15 18l-6-6 6-6" />
+                      </svg>
+                    </button>
+                  )}
 
-                <img
-                  src={imageMap[listing.images[currentImageIndex]] || person1}
-                  alt={`${listing.companyName} - zdjęcie ${
-                    currentImageIndex + 1
-                  }`}
-                  className="profile-gallery-image"
-                />
-
-                <button className="gallery-nav-btn next" onClick={nextImage}>
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M9 18l6-6-6-6" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="profile-gallery-thumbnails">
-                {listing.images.map((image, index) => (
                   <img
-                    key={index}
-                    src={imageMap[image] || person1}
-                    alt={`Miniatura ${index + 1}`}
-                    className={`profile-thumbnail ${
-                      index === currentImageIndex ? "active" : ""
+                    src={listing.images[currentImageIndex]}
+                    alt={`${listing.companyName} - zdjęcie ${
+                      currentImageIndex + 1
                     }`}
-                    onClick={() => setCurrentImageIndex(index)}
+                    className="profile-gallery-image"
+                    onError={handleImageError}
                   />
-                ))}
+
+                  {listing.images.length > 1 && (
+                    <button className="gallery-nav-btn next" onClick={nextImage}>
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                {/* Miniatury - wyświetlają się tylko gdy jest więcej niż 1 zdjęcie */}
+                {listing.images.length > 1 && (
+                  <div className="profile-gallery-thumbnails">
+                    {listing.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`Miniatura ${index + 1}`}
+                        className={`profile-thumbnail ${
+                          index === currentImageIndex ? "active" : ""
+                        }`}
+                        onClick={() => setCurrentImageIndex(index)}
+                        onError={handleImageError}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
+
+            {/* Wyświetl komunikat gdy nie ma zdjęć */}
+            {(!listing.images || listing.images.length === 0) && (
+              <div className="no-images-message">
+                <p>Brak zdjęć do wyświetlenia</p>
+              </div>
+            )}
 
             <CommentsSection listingId={listing.id} />
           </div>

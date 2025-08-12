@@ -146,6 +146,38 @@ const CommentsSection = ({ listingId }) => {
     return <div className="comment-rating">{stars}</div>;
   };
 
+  // Funkcja do określenia kto odpowiedział na komentarz (bez dodatkowej kolumny)
+  const getReplyInfo = (comment) => {
+    console.log("=== CHECKING REPLY INFO ===");
+    console.log("Comment:", comment);
+    console.log("replied_by:", comment.replied_by);
+    console.log("company_name:", comment.company_name);
+    console.log("Current user:", user);
+
+    if (!comment.admin_reply) {
+      return null;
+    }
+
+    // Jeśli replied_by jest null, to kontrahent odpowiedział
+    // (bo admin zawsze ma replied_by ustawione)
+    if (!comment.replied_by || comment.replied_by === null) {
+      console.log("Reply type: CONTRACTOR (replied_by is null)");
+      return {
+        type: "contractor",
+        name: comment.company_name || "Wykonawca",
+        label: "Odpowiedź wykonawcy"
+      };
+    }
+
+    // Jeśli replied_by istnieje, to admin odpowiedział
+    console.log("Reply type: ADMIN (replied_by exists)");
+    return {
+      type: "admin",
+      name: "Administrator",
+      label: "Odpowiedź administratora"
+    };
+  };
+
   return (
     <div className="comments-section">
       <h3>Komentarze ({comments.length})</h3>
@@ -221,37 +253,51 @@ const CommentsSection = ({ listingId }) => {
             <p>Brak komentarzy. Bądź pierwszą osobą, która skomentuje!</p>
           </div>
         ) : (
-          comments.map((comment) => (
-            <div key={comment.id} className="comment-item">
-              <div className="comment-header">
-                <div className="comment-author-info">
-                  <span className="comment-author-name">
-                    {comment.sender_name || "Anonim"}
-                  </span>
-                  <span className="comment-date">
-                    {formatDate(comment.created_at)}
-                  </span>
-                </div>
-                {comment.rating && renderStars(comment.rating)}
-              </div>
+          comments.map((comment) => {
+            const replyInfo = getReplyInfo(comment);
 
-              <div className="comment-content">
-                <p>{comment.message}</p>
-              </div>
-
-              {/* Opcjonalnie: odpowiedzi administratora */}
-              {comment.admin_reply && (
-                <div className="comment-admin-reply">
-                  <div className="admin-reply-header">
-                    <span className="admin-badge">
-                      Odpowiedź administratora
+            return (
+              <div key={comment.id} className="comment-item">
+                <div className="comment-header">
+                  <div className="comment-author-info">
+                    <span className="comment-author-name">
+                      {comment.sender_name || "Anonim"}
+                    </span>
+                    <span className="comment-date">
+                      {formatDate(comment.created_at)}
                     </span>
                   </div>
-                  <p>{comment.admin_reply}</p>
+                  {comment.rating && renderStars(comment.rating)}
                 </div>
-              )}
-            </div>
-          ))
+
+                <div className="comment-content">
+                  <p>{comment.message}</p>
+                </div>
+
+                {/* Odpowiedzi z informacją kto odpowiedział */}
+                {comment.admin_reply && replyInfo && (
+                  <div className={`comment-reply ${replyInfo.type}`}>
+                    <div className="reply-header">
+                      <span className={`reply-badge ${replyInfo.type}`}>
+                        {replyInfo.label}
+                      </span>
+                      <span className="reply-author">
+                        {replyInfo.name}
+                      </span>
+                      {comment.replied_at && (
+                        <span className="reply-date">
+                          {formatDate(comment.replied_at)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="reply-content">
+                      <p>{comment.admin_reply}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
       </div>
     </div>

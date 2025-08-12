@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -62,7 +63,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/contractor/profile', [UserController::class, 'contractorProfile']);
     Route::put('/contractor/profile', [UserController::class, 'updateContractorProfile']);
-    
+
     Route::get('/contractor/listings', [ListingController::class, 'contractorIndex']);
     Route::post('/contractor/listings', [ListingController::class, 'contractorStore']);
     Route::put('/contractor/listings/{id}', [ListingController::class, 'contractorUpdate']);
@@ -72,25 +73,29 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/contractor/listings/{listing}/images', [ListingController::class, 'uploadImages']);
     Route::delete('/contractor/listings/{listing}/images/{image}', [ListingController::class, 'deleteImage']);
     Route::get('/contractor/listings/{listing}/images', [ListingController::class, 'getImages']);
-    
+
     Route::get('/contractor/subscription', [SubscriptionController::class, 'contractorCurrent']);
     Route::post('/contractor/subscription', [SubscriptionController::class, 'contractorSubscribe']);
     Route::put('/contractor/subscription', [SubscriptionController::class, 'contractorUpdate']);
-    
+
     Route::get('/contractor/messages', [MessageController::class, 'contractorMessages']);
     Route::post('/contractor/messages/{id}/reply', [MessageController::class, 'contractorReply']);
     Route::patch('/contractor/messages/{id}/read', [MessageController::class, 'contractorMarkRead']);
-    
+
     Route::get('/contractor/reviews', [ReviewController::class, 'contractorIndex']);
     Route::post('/contractor/reviews/{id}/reply', [ReviewController::class, 'contractorReply']);
     Route::put('/contractor/reviews/{id}/reply', [ReviewController::class, 'contractorUpdateReply']);
-    
+
     Route::get('/contractor/settings/notifications', [UserController::class, 'getNotificationSettings']);
     Route::put('/contractor/settings/notifications', [UserController::class, 'updateNotificationSettings']);
     Route::get('/contractor/settings/privacy', [UserController::class, 'getPrivacySettings']);
     Route::put('/contractor/settings/privacy', [UserController::class, 'updatePrivacySettings']);
-    
+
     Route::get('/contractor/statistics', [ListingController::class, 'contractorStatistics']);
+    Route::get('/contractor/reviews', [MessageController::class, 'contractorReviews']);
+    Route::get('/contractor/reviews/statistics', [MessageController::class, 'contractorReviewsStatistics']);
+    Route::post('/contractor/reviews/{id}/reply', [MessageController::class, 'contractorReviewReply']);
+    Route::patch('/contractor/reviews/{id}/visibility', [MessageController::class, 'contractorReviewVisibility']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -105,14 +110,14 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::delete('/admin/listings/{id}', [ListingController::class, 'destroy']);
     Route::patch('/admin/listings/{id}/status', [ListingController::class, 'changeStatus']);
     Route::patch('/admin/listings/{id}/toggle-featured', [ListingController::class, 'toggleFeatured']);
-    
+
     Route::get('/admin/reviews', [ReviewController::class, 'adminIndex']);
     Route::post('/admin/reviews', [ReviewController::class, 'store']);
     Route::put('/admin/reviews/{id}', [ReviewController::class, 'update']);
     Route::patch('/admin/reviews/{id}/toggle-visibility', [ReviewController::class, 'toggleVisibility']);
     Route::put('/admin/reviews/bulk-update', [ReviewController::class, 'bulkUpdate']);
     Route::delete('/admin/reviews/{id}', [ReviewController::class, 'destroy']);
-    
+
     Route::get('/admin/messages', [MessageController::class, 'adminIndex']);
     Route::get('/admin/messages/{id}', [MessageController::class, 'show']);
     Route::post('/admin/messages/{id}/reply', [MessageController::class, 'adminReply']);
@@ -121,4 +126,3 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::put('/admin/messages/bulk-update', [MessageController::class, 'bulkUpdate']);
     Route::delete('/admin/messages/{id}', [MessageController::class, 'destroy']);
 });
-

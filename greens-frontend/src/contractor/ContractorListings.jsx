@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext"; // Dodaj import useAuth
 import api from "../services/api";
 import Avatar from "../assets/Avatar.png";
 import "../styles/contractor-listings.css";
 
 const ContractorListings = () => {
+  const { user } = useAuth(); // Dodaj hook useAuth
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -12,6 +14,7 @@ const ContractorListings = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [currentImages, setCurrentImages] = useState([]);
+  const [userProfile, setUserProfile] = useState(null); // Dodaj state dla profilu użytkownika
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -55,9 +58,38 @@ const ContractorListings = () => {
     ],
   };
 
+  // Funkcja do pobierania profilu użytkownika
+  const fetchUserProfile = async () => {
+    try {
+      console.log("=== FETCHING USER PROFILE FOR AUTOFILL ===");
+      const response = await api.get("/user/profile");
+      console.log("User profile response:", response.data);
+
+      let profileData = {};
+      if (response.data?.data) {
+        profileData = response.data.data;
+      } else if (response.data) {
+        profileData = response.data;
+      }
+
+      console.log("Processed profile data:", profileData);
+      setUserProfile(profileData);
+    } catch (error) {
+      console.error("Błąd podczas pobierania profilu użytkownika:", error);
+      // Fallback - użyj danych z AuthContext
+      if (user) {
+        setUserProfile(user);
+      }
+    }
+  };
+
   useEffect(() => {
     fetchListings();
-  }, []);
+    // Pobierz profil użytkownika przy załadowaniu komponentu
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
 
   const fetchListings = async () => {
     try {
@@ -353,7 +385,11 @@ const ContractorListings = () => {
     }
   };
 
+  // ZMIENIONA FUNKCJA - wypełnia dane z profilu użytkownika
   const resetForm = () => {
+    console.log("=== RESETTING FORM WITH USER PROFILE DATA ===");
+    console.log("User profile:", userProfile);
+
     setFormData({
       title: "",
       description: "",
@@ -361,15 +397,38 @@ const ContractorListings = () => {
       price: "",
       category: "",
       subcategory: "",
-      location: "",
-      phone: "",
-      email: "",
+      location: userProfile?.city || "", // Automatycznie wypełnij miasto
+      phone: userProfile?.phone || "", // Automatycznie wypełnij telefon
+      email: userProfile?.email || "", // Automatycznie wypełnij email
       status: "active",
     });
     setEditingListing(null);
     setShowForm(false);
     setSelectedImages([]);
     setCurrentImages([]);
+  };
+
+  // NOWA FUNKCJA - otwiera formularz z wypełnionymi danymi
+  const handleAddNewListing = () => {
+    console.log("=== OPENING NEW LISTING FORM ===");
+    console.log("User profile for autofill:", userProfile);
+
+    setEditingListing(null);
+    setFormData({
+      title: "",
+      description: "",
+      long_description: "",
+      price: "",
+      category: "",
+      subcategory: "",
+      location: userProfile?.city || "", // Automatycznie wypełnij miasto
+      phone: userProfile?.phone || "", // Automatycznie wypełnij telefon
+      email: userProfile?.email || "", // Automatycznie wypełnij email
+      status: "active",
+    });
+    setSelectedImages([]);
+    setCurrentImages([]);
+    setShowForm(true);
   };
 
   const formatDate = (dateString) => {
@@ -402,7 +461,7 @@ const ContractorListings = () => {
       <div className="contractor-listings-header">
         <h2>Moje Oferty</h2>
         <button
-          onClick={() => setShowForm(true)}
+          onClick={handleAddNewListing} // ZMIENIONO - używa nowej funkcji
           className="contractor-btn-add"
         >
           + Dodaj nową ofertę
@@ -691,7 +750,7 @@ const ContractorListings = () => {
           <div className="contractor-listings-empty">
             <p>Nie masz jeszcze żadnych ofert</p>
             <button
-              onClick={() => setShowForm(true)}
+              onClick={handleAddNewListing} // ZMIENIONO - używa nowej funkcji
               className="contractor-btn-add"
             >
               Dodaj pierwszą ofertę
