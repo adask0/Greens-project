@@ -11,7 +11,6 @@ import api from "../services/api";
 import ContractorProfile from "./ContractorProfile";
 import ContractorListings from "./ContractorListings";
 import ContractorSubscription from "./ContractorSubscription";
-import ContractorMessages from "./ContractorMessages";
 import ContractorSettings from "./ContractorSettings";
 import ContractorReviews from "./ContractorReviews";
 import ListIcon from "../assets/List.svg?react";
@@ -176,14 +175,6 @@ const ContractorDashboard = () => {
             }`}
           >
             <span className="nav-icon">💳</span> Subskrypcje
-          </Link>
-          <Link
-            to="/contractor/messages"
-            className={`contractor-nav-item ${
-              currentPath.includes("/contractor/messages") ? "active" : ""
-            }`}
-          >
-            <span className="nav-icon">✉️</span> Wiadomości
           </Link>
           <Link
             to="/contractor/reviews"

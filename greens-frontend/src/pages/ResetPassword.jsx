@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import img1 from '../assets/img1.png';
 import Header from '../components/Header';
 import api from '../services/api';
 
-const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+const ResetPassword = () => {
+  const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [emailSent, setEmailSent] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Pobierz token i email z URL
+  const urlParams = new URLSearchParams(location.search);
+  const token = urlParams.get('token');
+  const email = urlParams.get('email');
 
   useEffect(() => {
     const handleResize = () => {
@@ -20,34 +29,52 @@ const ForgotPassword = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    // Sprawdź czy token i email są obecne
+    if (!token || !email) {
+      setError('Nieprawidłowy link resetowania hasła');
+    }
+  }, [token, email]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (password !== passwordConfirmation) {
+      setError('Hasła nie są identyczne');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Hasło musi mieć co najmniej 8 znaków');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setMessage('');
 
     try {
-      const response = await api.post('/forgot-password', { email });
+      const response = await api.post('/reset-password', {
+        token,
+        email,
+        password,
+        password_confirmation: passwordConfirmation
+      });
 
-      setMessage(response.data.message);
-      setEmailSent(true);
-      setEmail('');
+      setMessage('Hasło zostało pomyślnie zresetowane');
+      setPassword('');
+      setPasswordConfirmation('');
+
+      // Przekieruj na stronę logowania po 3 sekundach
+      setTimeout(() => {
+        navigate('/login');
+      }, 3000);
     } catch (error) {
-      console.error('Forgot password error:', error);
+      console.error('Reset password error:', error);
       setError(error.response?.data?.message || 'Wystąpił błąd. Spróbuj ponownie.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleChange = (e) => {
-    setEmail(e.target.value);
-  };
-
-  const handleSendAgain = () => {
-    setEmailSent(false);
-    setMessage('');
-    setError('');
   };
 
   const inputStyles = {
@@ -58,7 +85,8 @@ const ForgotPassword = () => {
     fontSize: '1rem',
     backgroundColor: 'white',
     boxSizing: 'border-box',
-    boxShadow: '5px 5px rgba(249, 115, 22, 1)'
+    boxShadow: '5px 5px rgba(249, 115, 22, 1)',
+    marginBottom: '1rem'
   };
 
   return (
@@ -95,7 +123,7 @@ const ForgotPassword = () => {
             fontSize: '0.85rem',
             color: 'rgba(255,255,255,0.8)'
           }}>
-            Home / Logowanie / Przypomnij hasło
+            Home / Logowanie / Resetuj hasło
           </div>
 
           <h1 style={{
@@ -107,7 +135,7 @@ const ForgotPassword = () => {
             <span style={{
               boxShadow: 'inset 0 -0.4em 0 0 #f97316'
             }}>
-              {emailSent ? 'Email został wysłany!' : 'Przypomnij hasło'}
+              Resetuj hasło
             </span>
           </h1>
 
@@ -117,10 +145,7 @@ const ForgotPassword = () => {
             lineHeight: 1.5,
             opacity: 0.9
           }}>
-            {emailSent
-              ? 'Sprawdź swoją skrzynkę mailową i kliknij w link aby zresetować hasło.'
-              : 'Podaj adres e-mail, na który dostaniesz wiadomość z przypomnieniem hasła.'
-            }
+            Wprowadź nowe hasło dla swojego konta.
           </p>
 
           {message && (
@@ -129,11 +154,11 @@ const ForgotPassword = () => {
               color: '#166534',
               padding: '0.75rem',
               borderRadius: '8px',
-              marginBottom: '1rem',
-              textAlign: 'center'
+              marginBottom: '1rem'
             }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📧</div>
               {message}
+              <br />
+              <small>Przekierowanie na stronę logowania za 3 sekundy...</small>
             </div>
           )}
 
@@ -149,34 +174,27 @@ const ForgotPassword = () => {
             </div>
           )}
 
-          {emailSent ? (
-            <div style={{ textAlign: 'center' }}>
-              <button
-                onClick={handleSendAgain}
-                style={{
-                  backgroundColor: 'transparent',
-                  color: 'white',
-                  padding: '0.8rem 2rem',
-                  border: '2px solid white',
-                  borderRadius: '20px',
-                  fontSize: '1rem',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  width: isMobile ? '100%' : 'auto'
-                }}
-              >
-                Wyślij ponownie
-              </button>
-            </div>
-          ) : (
+          {!error && token && email && (
             <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '1rem' }}>
+                <input
+                  type="password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Nowe hasło"
+                  style={inputStyles}
+                  required
+                />
+              </div>
+
               <div style={{ marginBottom: '2rem' }}>
                 <input
-                  type="email"
-                  name="email"
-                  value={email}
-                  onChange={handleChange}
-                  placeholder="email.com"
+                  type="password"
+                  name="password_confirmation"
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  placeholder="Potwierdź nowe hasło"
                   style={inputStyles}
                   required
                 />
@@ -185,7 +203,7 @@ const ForgotPassword = () => {
               <div>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !password || !passwordConfirmation}
                   style={{
                     backgroundColor: '#f97316',
                     color: 'white',
@@ -195,10 +213,11 @@ const ForgotPassword = () => {
                     fontSize: '1rem',
                     fontWeight: '500',
                     cursor: 'pointer',
-                    width: isMobile ? '100%' : 'auto'
+                    width: isMobile ? '100%' : 'auto',
+                    opacity: loading || !password || !passwordConfirmation ? 0.6 : 1
                   }}
                 >
-                  {loading ? 'Wysyłanie...' : 'Resetuj hasło'}
+                  {loading ? 'Resetowanie...' : 'Resetuj hasło'}
                 </button>
               </div>
             </form>
@@ -228,4 +247,4 @@ const ForgotPassword = () => {
   );
 };
 
-export default ForgotPassword;
+export default ResetPassword;

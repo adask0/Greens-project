@@ -16,6 +16,8 @@ import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import AdminList from "./admin/AdminList";
 import ContractorDashboard from "./contractor/ContractorDashboard";
+import ResetPassword from "./pages/ResetPassword";
+
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -120,6 +122,14 @@ const AppContent = () => {
               <ForgotPassword />
             </PublicRoute>
           }
+        />
+        <Route
+        path="/reset-password"
+        element={
+            <PublicRoute>
+            <ResetPassword />
+            </PublicRoute>
+        }
         />
         <Route
           path="/register"

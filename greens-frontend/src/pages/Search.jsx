@@ -898,7 +898,7 @@ const Search = () => {
                 textAlign: "center",
                 padding: "3rem",
                 fontSize: "18px",
-                color: "white",
+                color: "white ",
               }}
             >
               Brak ogłoszeń spełniających kryteria wyszukiwania

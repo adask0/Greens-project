@@ -18,6 +18,7 @@ Route::post('/register-company', [AuthController::class, 'registerCompany']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::post('/contact', [ContactController::class, 'store']);
@@ -42,6 +43,7 @@ Route::get('/listings/{id}', [ListingController::class, 'show']);
 Route::get('/listings/statistics', [ListingController::class, 'statistics']);
 Route::get('/reviews', [ReviewController::class, 'index']);
 Route::get('/reviews/statistics', [ReviewController::class, 'statistics']);
+
 
 Route::get('/listings/{id}/comments', [MessageController::class, 'getApprovedComments']);
 
