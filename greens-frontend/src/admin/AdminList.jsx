@@ -9,7 +9,6 @@ import "../styles/admin-list.css";
 import CompanyList from "./CompanyList";
 import AnnouncementsList from "./AnnouncementsList";
 import MessagesList from "./MessagesList";
-import ReviewsList from "./ReviewsList";
 import SubscriptionsList from "./SubscriptionsList";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -67,12 +66,6 @@ const AdminPanel = () => {
       name: "Wiadomości",
       icon: ArrowIcon,
       component: MessagesList,
-    },
-    {
-      id: "rating",
-      name: "Oceny i komentarze",
-      icon: RatingIcon,
-      component: ReviewsList,
     },
     {
       id: "subscription",

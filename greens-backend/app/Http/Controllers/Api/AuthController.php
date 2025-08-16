@@ -12,13 +12,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 
 class AuthController extends Controller
 {
-
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -54,7 +54,6 @@ class AuthController extends Controller
         ], 201);
     }
 
-
     public function registerCompany(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -63,6 +62,7 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'phone' => 'required|string|max:20',
             'address' => 'required|string|max:255',
+            'city' => 'required|string|max:100', // DODANE POLE MIASTO
             'nip' => 'nullable|string|max:20|unique:companies',
             'status' => 'in:dostępny,niedostępny,zawieszony',
             'subscription' => 'nullable|string|max:50',
@@ -83,12 +83,14 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
             'address' => $request->address,
+            'city' => $request->city, // DODANE POLE MIASTO
             'nip' => $request->nip,
             'status' => $request->status ?? 'dostępny',
             'subscription' => $request->subscription ?? '1 mies.',
             'subscription_end_date' => $request->subscription_end_date ?? Carbon::now()->addMonth(),
             'is_active' => $request->is_active ?? true,
             'user_type' => 'contractor',
+            // avatar będzie dodane przez osobny endpoint po rejestracji
         ]);
 
         $token = $company->createToken('auth_token')->plainTextToken;
@@ -99,7 +101,6 @@ class AuthController extends Controller
             'message' => 'Company registered successfully'
         ], 201);
     }
-
 
     public function login(Request $request): JsonResponse
     {

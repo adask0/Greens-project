@@ -44,11 +44,8 @@ Route::get('/listings/statistics', [ListingController::class, 'statistics']);
 Route::get('/reviews', [ReviewController::class, 'index']);
 Route::get('/reviews/statistics', [ReviewController::class, 'statistics']);
 
-
 Route::get('/listings/{id}/comments', [MessageController::class, 'getApprovedComments']);
-
 Route::post('/listings/{id}/increment-clicks', [ListingController::class, 'incrementClicks']);
-
 Route::get('/messages/statistics', [MessageController::class, 'statistics']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
@@ -65,6 +62,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/contractor/profile', [UserController::class, 'contractorProfile']);
     Route::put('/contractor/profile', [UserController::class, 'updateContractorProfile']);
+    Route::post('/contractor/profile/avatar', [UserController::class, 'uploadAvatar']); // DODANA TRASA
 
     Route::get('/contractor/listings', [ListingController::class, 'contractorIndex']);
     Route::post('/contractor/listings', [ListingController::class, 'contractorStore']);

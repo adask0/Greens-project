@@ -16,6 +16,7 @@ const Search = () => {
   const itemsPerPage = viewMode === "grid" ? 12 : 6;
   const [priceRange, setPriceRange] = useState([100, 10000]);
   const [selectedCity, setSelectedCity] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // DODANE - stan dla wyszukiwania
   const [selectedServices, setSelectedServices] = useState({
     "Usługi porządkowe": [],
     "Zarządzanie nieruchomościami mieszkalnymi": [],
@@ -74,7 +75,7 @@ const Search = () => {
       const response = await api.get("/listings", {
         params: {
           per_page: 100,
-          status: "active", // ZMIENIONE z "aktywne" na "active"
+          status: "active",
         },
       });
 
@@ -127,7 +128,7 @@ const Search = () => {
             listing.long_description ||
             listing.description ||
             "Brak szczegółowego opisu",
-          category: mainCategory, // POPRAWIONE - używamy zmapowanej kategorii
+          category: mainCategory,
           subcategory: listing.subcategory || "Ogólne",
           price: listing.price || 0,
           rating: listing.rating || (Math.random() * 2 + 3).toFixed(1),
@@ -334,7 +335,21 @@ const Search = () => {
     }
   }, [searchParams]);
 
-  // POPRAWIONA logika filtrowania
+  // DODANA FUNKCJA - obsługa wyszukiwania
+  const handleSearchInputChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset strony przy nowym wyszukiwaniu
+  };
+
+  // DODANA FUNKCJA - obsługa przycisku Szukaj
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    // Możesz dodać dodatkową logikę, np. analytics
+    console.log("Searching for:", searchQuery);
+  };
+
+  // POPRAWIONA logika filtrowania z wyszukiwaniem tekstowym
   const filteredListings = listings.filter((listing) => {
     console.log("=== FILTERING LISTING ===");
     console.log(
@@ -343,6 +358,25 @@ const Search = () => {
       listing.category,
       listing.subcategory
     );
+
+    // DODANY FILTR TEKSTOWY
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      const searchableText = [
+        listing.title,
+        listing.description,
+        listing.companyName,
+        listing.category,
+        listing.subcategory,
+        listing.location,
+        ...listing.tags
+      ].join(" ").toLowerCase();
+
+      if (!searchableText.includes(query)) {
+        console.log("Filtered out by search query");
+        return false;
+      }
+    }
 
     // Filtr cenowy
     if (listing.price < priceRange[0] || listing.price > priceRange[1]) {
@@ -389,6 +423,7 @@ const Search = () => {
   });
 
   console.log("=== FILTERING RESULTS ===");
+  console.log("Search query:", searchQuery);
   console.log("Total listings:", listings.length);
   console.log("Filtered listings:", filteredListings.length);
   console.log("Selected services:", selectedServices);
@@ -606,12 +641,14 @@ const Search = () => {
             </div>
 
             <div className="search-hero-bottom">
-              <div className="search-bar">
+              <form className="search-bar" onSubmit={handleSearchSubmit}>
                 <div className="search-profile-container">
                   <input
                     type="text"
                     placeholder="W czym szukasz pomocy?"
                     className="search-profile"
+                    value={searchQuery}
+                    onChange={handleSearchInputChange}
                   />
                   <svg
                     className="search-icon"
@@ -642,8 +679,8 @@ const Search = () => {
                   </svg>
                 </div>
 
-                <button className="search-button">Szukaj</button>
-              </div>
+                <button type="submit" className="search-button">Szukaj</button>
+              </form>
 
               <div className="search-categories">
                 <button
@@ -820,6 +857,8 @@ const Search = () => {
         </div>
 
         <div className="search-content">
+
+
           <div className="search-view-controls">
             <div
               onClick={() => changeViewMode("list")}
@@ -898,10 +937,13 @@ const Search = () => {
                 textAlign: "center",
                 padding: "3rem",
                 fontSize: "18px",
-                color: "white ",
+                color: "white",
               }}
             >
-              Brak ogłoszeń spełniających kryteria wyszukiwania
+              {searchQuery
+                ? `Brak wyników dla "${searchQuery}"`
+                : "Brak ogłoszeń spełniających kryteria wyszukiwania"
+              }
             </div>
           )}
 

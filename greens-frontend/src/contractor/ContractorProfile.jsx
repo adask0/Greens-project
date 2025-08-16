@@ -80,6 +80,20 @@ const ContractorProfile = () => {
     }
   }, [user]);
 
+  // Funkcja do pobierania URL awatara
+  const getAvatarUrl = () => {
+    if (profileData.avatar) {
+      // Jeśli avatar jest pełnym URL (zaczyna się od http)
+      if (profileData.avatar.startsWith('http')) {
+        return profileData.avatar;
+      }
+      // Jeśli avatar to tylko nazwa pliku, dodaj base URL
+      return `${window.location.origin}/storage/avatars/${profileData.avatar}`;
+    }
+    // Fallback do domyślnego awatara
+    return Avatar;
+  };
+
   const handleInputChange = (field, value) => {
     setProfileData((prev) => ({
       ...prev,
@@ -102,7 +116,13 @@ const ContractorProfile = () => {
     setMessage({ type: "", text: "" });
 
     try {
-      await api.put("/user/profile", profileData);
+      const response = await api.put("/contractor/profile", profileData);
+
+      // Aktualizuj dane w localStorage jeśli to firma
+      if (response.data.company) {
+        localStorage.setItem("company", JSON.stringify(response.data.company));
+      }
+
       setMessage({
         type: "success",
         text: "Profil został zaktualizowany pomyślnie!",
@@ -124,20 +144,46 @@ const ContractorProfile = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Sprawdź typ pliku
+    if (!file.type.startsWith('image/')) {
+      setMessage({
+        type: "error",
+        text: "Proszę wybrać plik obrazu (JPG, PNG, GIF)"
+      });
+      return;
+    }
+
+    // Sprawdź rozmiar pliku (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({
+        type: "error",
+        text: "Plik jest za duży. Maksymalny rozmiar to 5MB"
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("avatar", file);
 
     try {
       setSaving(true);
-      const response = await api.post("/user/avatar", formData, {
+      const response = await api.post("/contractor/profile/avatar", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+
+      // Aktualizuj avatar w stanie lokalnym
       setProfileData((prev) => ({
         ...prev,
-        avatar: response.data.avatar_url,
+        avatar: response.data.avatar || response.data.avatar_url,
       }));
+
+      // Aktualizuj dane w localStorage
+      const companyData = JSON.parse(localStorage.getItem("company") || "{}");
+      companyData.avatar = response.data.avatar || response.data.avatar_url;
+      localStorage.setItem("company", JSON.stringify(companyData));
+
       setMessage({
         type: "success",
         text: "Zdjęcie profilowe zostało zaktualizowane!",
@@ -146,7 +192,7 @@ const ContractorProfile = () => {
       console.error("Błąd podczas zmiany avatara:", error);
       setMessage({
         type: "error",
-        text: "Nie udało się zaktualizować zdjęcia profilowego",
+        text: error.response?.data?.message || "Nie udało się zaktualizować zdjęcia profilowego",
       });
     } finally {
       setSaving(false);
@@ -210,7 +256,13 @@ const ContractorProfile = () => {
 
             <div className="contractor-avatar-section">
               <div className="contractor-avatar-preview">
-                <img src={profileData.avatar || Avatar} alt="Avatar" />
+                <img
+                  src={getAvatarUrl()}
+                  alt="Avatar"
+                  onError={(e) => {
+                    e.target.src = Avatar; // Fallback do domyślnego awatara jeśli błąd
+                  }}
+                />
                 <label className="contractor-avatar-upload">
                   <input
                     type="file"

@@ -97,6 +97,16 @@ const ContractorDashboard = () => {
     return stars;
   };
 
+  const getAvatarUrl = () => {
+    if (user?.avatar) {
+      if (user.avatar.startsWith('http')) {
+        return user.avatar;
+      }
+      return `${window.location.origin}/storage/avatars/${user.avatar}`;
+    }
+    return Avatar;
+  };
+
   if (!user) {
     return (
       <div className="contractor-loading">
@@ -131,8 +141,11 @@ const ContractorDashboard = () => {
         <div className="contractor-profile-section">
           <div className="contractor-profile-avatar">
             <img
-              src={user?.avatar_url || user?.avatar || Avatar}
+              src={getAvatarUrl()}
               alt="Avatar"
+              onError={(e) => {
+                e.target.src = Avatar;
+              }}
             />
             <div className="contractor-status-badge">
               {user?.subscription_type || "STANDARD"}
@@ -203,7 +216,6 @@ const ContractorDashboard = () => {
           <Route path="profile" element={<ContractorProfile />} />
           <Route path="listings" element={<ContractorListings />} />
           <Route path="subscription" element={<ContractorSubscription />} />
-          <Route path="messages" element={<ContractorMessages />} />
           <Route path="reviews" element={<ContractorReviews />} />
           <Route path="settings" element={<ContractorSettings />} />
         </Routes>
