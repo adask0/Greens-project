@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import "../styles/profile.css";
 import api from "../services/api";
 import CommentsSection from "./CommentsSection";
@@ -13,6 +14,7 @@ import youtubeIcon from "../assets/youtube.svg";
 
 const Profile = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,6 +23,8 @@ const Profile = () => {
     phone: false,
     email: false,
   });
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
 
   // Mapa ikon social media
   const iconMap = {
@@ -33,6 +37,52 @@ const Profile = () => {
   useEffect(() => {
     fetchListing();
   }, [id]);
+
+  // Sprawdź czy oferta jest w ulubionych
+  useEffect(() => {
+    if (user && listing) {
+      checkIfFavorite();
+    }
+  }, [user, listing]);
+
+  const checkIfFavorite = async () => {
+    if (!user || !listing) return;
+
+    try {
+      const response = await api.get('/user/favorites');
+      const favorites = response.data.favorites || [];
+      setIsFavorite(favorites.includes(parseInt(id)));
+    } catch (error) {
+      console.error('Error checking favorites:', error);
+    }
+  };
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      alert('Musisz być zalogowany, aby dodać do ulubionych');
+      return;
+    }
+
+    setFavoriteLoading(true);
+    try {
+      const response = await api.post(`/listings/${id}/toggle-favorite`);
+      setIsFavorite(response.data.is_favorited);
+
+      // Pokaż komunikat
+      const message = response.data.is_favorited
+        ? 'Dodano do ulubionych!'
+        : 'Usunięto z ulubionych!';
+
+      // Możesz dodać toast notification tutaj
+      console.log(message);
+
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Wystąpił błąd. Spróbuj ponownie.');
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
 
   const fetchListing = async () => {
     try {
@@ -297,9 +347,29 @@ const Profile = () => {
       <div className="profile-container">
         <div className="profile-header">
           <h1 className="profile-category">Kategoria: {listing.category}</h1>
-          <h1 className="profile-title">{listing.title}</h1>
           <div className="profile-price">{listing.price}zł</div>
+
+{user && (
+  <button
+    className={`profile-favorite-btn ${isFavorite ? 'active' : ''} ${favoriteLoading ? 'adding' : ''}`}
+    onClick={toggleFavorite}
+    disabled={favoriteLoading}
+  >
+    <svg
+      className="favorite-icon"
+      width="30"
+      height="30"
+      viewBox="0 0 24 24"
+      fill={isFavorite ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  </button>
+)}
         </div>
+
         <div className="profile-content">
           <div className="profile-sidebar">
             <div className="profile-contact-card">

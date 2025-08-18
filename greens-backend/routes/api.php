@@ -40,6 +40,8 @@ Route::patch('/companies/{id}/status', [CompanyController::class, 'changeStatus'
 Route::put('/subscriptions/bulk-update', [SubscriptionController::class, 'bulkUpdate']);
 Route::get('/listings', [ListingController::class, 'index']);
 Route::get('/listings/{id}', [ListingController::class, 'show']);
+Route::get('/user/favorites', [UserController::class, 'getFavorites']);
+Route::post('/listings/{id}/toggle-favorite', [ListingController::class, 'toggleFavorite']);
 Route::get('/listings/statistics', [ListingController::class, 'statistics']);
 Route::get('/reviews', [ReviewController::class, 'index']);
 Route::get('/reviews/statistics', [ReviewController::class, 'statistics']);
@@ -57,6 +59,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/profile/avatar', [UserController::class, 'uploadAvatar']);
     Route::post('/comments', [MessageController::class, 'storeComment']);
     Route::post('/messages', [MessageController::class, 'store']);
+    Route::post('/listings/{id}/toggle-favorite', [ListingController::class, 'toggleFavorite']);
+    Route::get('/user/favorites', [UserController::class, 'getFavorites']);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {

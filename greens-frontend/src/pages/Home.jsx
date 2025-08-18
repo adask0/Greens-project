@@ -147,10 +147,10 @@ const Home = () => {
             </p>
 
             <div className="home-buttons">
-              <Link to="/services" className="home-btn-primary">
+              <Link to="/lista" className="home-btn-primary">
                 Znajdź Usługe
               </Link>
-              <Link to="/contact" className="home-btn-secondary">
+              <Link to="/contractor/listings" className="home-btn-secondary">
                 Dodaj Ogłoszenie
               </Link>
             </div>

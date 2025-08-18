@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -23,79 +24,78 @@ class UserController extends Controller
     }
 
 
-public function contractorProfile(Request $request): JsonResponse
-{
-    $user = $request->user();
+    public function contractorProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
 
-    if ($user->user_type !== 'contractor') {
-        return response()->json(['message' => 'Access denied. Contractor privileges required.'], 403);
+        if ($user->user_type !== 'contractor') {
+            return response()->json(['message' => 'Access denied. Contractor privileges required.'], 403);
+        }
+
+        try {
+            // Dodatkowe statystyki dla kontrahentów - używaj twoich relacji
+            $stats = [
+                'total_listings' => $user->listings()->count(),
+                'active_listings' => $user->listings()->where('status', 'active')->count(), // zmienione z is_active
+                'total_reviews' => $user->reviews()->count(),
+                'average_rating' => $user->ratings()->avg('rating') ?? 0,
+            ];
+
+            return response()->json([
+                // Wszystkie dane z tabeli users
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'city' => $user->city,
+                'address' => $user->address,
+                'about' => $user->about,
+                'avatar' => $user->avatar_url, // używaj accessor z modelu
+                'nip' => $user->nip,
+                'website' => $user->website,
+                'company_description' => $user->company_description,
+                'company_name' => $user->company_name,
+                'user_type' => $user->user_type,
+                'is_admin' => $user->is_admin,
+
+                // Subscription info
+                'subscription_type' => $user->subscription_type ?? 'STANDARD',
+                'subscription_expires_at' => $user->subscription_expires_at,
+
+                // Pola których nie ma w tabeli users - domyślne wartości
+                'subscription' => null,
+                'subscription_end_date' => null,
+                'status' => 'dostępny',
+                'is_active' => true,
+
+                // Specializations z JSON column
+                'specializations' => $user->specializations ?? [],
+
+                // Ustawienia powiadomień
+                'email_new_messages' => $user->email_new_messages ?? true,
+                'email_new_reviews' => $user->email_new_reviews ?? true,
+                'email_listing_updates' => $user->email_listing_updates ?? false,
+                'email_promotional' => $user->email_promotional ?? false,
+                'sms_new_messages' => $user->sms_new_messages ?? true,
+                'sms_urgent_notifications' => $user->sms_urgent_notifications ?? true,
+                'push_new_messages' => $user->push_new_messages ?? true,
+                'push_new_reviews' => $user->push_new_reviews ?? true,
+
+                // Ustawienia prywatności
+                'profile_visibility' => $user->profile_visibility ?? 'public',
+                'show_phone' => $user->show_phone ?? true,
+                'show_email' => $user->show_email ?? false,
+                'allow_reviews' => $user->allow_reviews ?? true,
+                'allow_messages' => $user->allow_messages ?? true,
+                'search_engine_indexing' => $user->search_engine_indexing ?? true,
+
+                // Statystyki
+                'statistics' => $stats
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Profile fetch error: ' . $e->getMessage());
+            return response()->json(['error' => 'Server error: ' . $e->getMessage()], 500);
+        }
     }
-
-    try {
-        // Dodatkowe statystyki dla kontrahentów - używaj twoich relacji
-        $stats = [
-            'total_listings' => $user->listings()->count(),
-            'active_listings' => $user->listings()->where('status', 'active')->count(), // zmienione z is_active
-            'total_reviews' => $user->reviews()->count(),
-            'average_rating' => $user->ratings()->avg('rating') ?? 0,
-        ];
-
-        return response()->json([
-            // Wszystkie dane z tabeli users
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'city' => $user->city,
-            'address' => $user->address,
-            'about' => $user->about,
-            'avatar' => $user->avatar_url, // używaj accessor z modelu
-            'nip' => $user->nip,
-            'website' => $user->website,
-            'company_description' => $user->company_description,
-            'company_name' => $user->company_name,
-            'user_type' => $user->user_type,
-            'is_admin' => $user->is_admin,
-            
-            // Subscription info
-            'subscription_type' => $user->subscription_type ?? 'STANDARD',
-            'subscription_expires_at' => $user->subscription_expires_at,
-            
-            // Pola których nie ma w tabeli users - domyślne wartości
-            'subscription' => null,
-            'subscription_end_date' => null,
-            'status' => 'dostępny',
-            'is_active' => true,
-            
-            // Specializations z JSON column
-            'specializations' => $user->specializations ?? [],
-            
-            // Ustawienia powiadomień
-            'email_new_messages' => $user->email_new_messages ?? true,
-            'email_new_reviews' => $user->email_new_reviews ?? true,
-            'email_listing_updates' => $user->email_listing_updates ?? false,
-            'email_promotional' => $user->email_promotional ?? false,
-            'sms_new_messages' => $user->sms_new_messages ?? true,
-            'sms_urgent_notifications' => $user->sms_urgent_notifications ?? true,
-            'push_new_messages' => $user->push_new_messages ?? true,
-            'push_new_reviews' => $user->push_new_reviews ?? true,
-            
-            // Ustawienia prywatności
-            'profile_visibility' => $user->profile_visibility ?? 'public',
-            'show_phone' => $user->show_phone ?? true,
-            'show_email' => $user->show_email ?? false,
-            'allow_reviews' => $user->allow_reviews ?? true,
-            'allow_messages' => $user->allow_messages ?? true,
-            'search_engine_indexing' => $user->search_engine_indexing ?? true,
-            
-            // Statystyki
-            'statistics' => $stats
-        ]);
-        
-    } catch (\Exception $e) {
-        \Log::error('Profile fetch error: ' . $e->getMessage());
-        return response()->json(['error' => 'Server error: ' . $e->getMessage()], 500);
-    }
-}
 
     /**
      * Update contractor profile (rozszerzona walidacja)
@@ -116,13 +116,13 @@ public function contractorProfile(Request $request): JsonResponse
             'city' => 'required|string|max:100',
             'address' => 'nullable|string|max:255',
             'description' => 'nullable|string|max:1000',
-            
+
             // Dane firmowe
             'company_name' => 'nullable|string|max:255',
             'company_description' => 'nullable|string|max:1000',
             'nip' => 'nullable|string|max:20',
             'website' => 'nullable|url|max:255',
-            
+
             // Specjalizacje
             'specializations' => 'nullable|array',
             'specializations.*' => 'string|max:100'
@@ -161,7 +161,7 @@ public function contractorProfile(Request $request): JsonResponse
         }
 
         $avatarPath = $request->file('avatar')->store('avatars', 'public');
-        
+
         $user->update(['avatar' => $avatarPath]);
 
         return response()->json([
@@ -176,7 +176,7 @@ public function contractorProfile(Request $request): JsonResponse
     public function getNotificationSettings(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         return response()->json([
             'email_new_messages' => $user->email_new_messages ?? true,
             'email_new_reviews' => $user->email_new_reviews ?? true,
@@ -218,7 +218,7 @@ public function contractorProfile(Request $request): JsonResponse
     public function getPrivacySettings(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         return response()->json([
             'profile_visibility' => $user->profile_visibility ?? 'public',
             'show_phone' => $user->show_phone ?? true,
@@ -274,7 +274,7 @@ public function contractorProfile(Request $request): JsonResponse
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
-           
+
             $validated['avatar'] = $request->file('avatar')->store('avatars', 'public');
         }
 
@@ -319,9 +319,6 @@ public function contractorProfile(Request $request): JsonResponse
         ]);
     }
 
-    /**
-     * Get public user profile
-     */
     public function show(string $id): JsonResponse
     {
         $user = User::with(['specializations', 'ratings.user', 'listings.images'])
@@ -330,5 +327,26 @@ public function contractorProfile(Request $request): JsonResponse
         return response()->json([
             'user' => $user
         ]);
+    }
+    public function getFavorites(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $favoriteListings = $user->favorite_listings ?? [];
+
+            if (is_string($favoriteListings)) {
+                $favoriteListings = json_decode($favoriteListings, true) ?? [];
+            }
+
+            return response()->json([
+                'success' => true,
+                'favorites' => $favoriteListings
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'favorites' => []
+            ], 500);
+        }
     }
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useSearchParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import Avatar from "../assets/Avatar.png";
 import img1 from "../assets/img1.png";
 import "../styles/search.css";
@@ -10,13 +11,16 @@ const Search = () => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState("list");
   const itemsPerPage = viewMode === "grid" ? 12 : 6;
   const [priceRange, setPriceRange] = useState([100, 10000]);
   const [selectedCity, setSelectedCity] = useState("");
-  const [searchQuery, setSearchQuery] = useState(""); // DODANE - stan dla wyszukiwania
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showingFavorites, setShowingFavorites] = useState(false);
+  const [favoriteListings, setFavoriteListings] = useState([]);
   const [selectedServices, setSelectedServices] = useState({
     "Usługi porządkowe": [],
     "Zarządzanie nieruchomościami mieszkalnymi": [],
@@ -183,6 +187,26 @@ const Search = () => {
     }
   };
 
+  // Funkcja pobierania ulubionych
+  const fetchFavorites = async () => {
+    if (!user) return;
+
+    try {
+      const response = await api.get('/user/favorites');
+      const favoriteIds = response.data.favorites || [];
+
+      // Filtruj listings tylko do tych które są w ulubionych
+      const favoritesOnly = listings.filter(listing =>
+        favoriteIds.includes(listing.id)
+      );
+
+      setFavoriteListings(favoritesOnly);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+      setFavoriteListings([]);
+    }
+  };
+
   // POPRAWIONA funkcja aktualizująca liczniki kategorii
   const updateCategoryCounts = (listingsData) => {
     console.log("=== UPDATING CATEGORY COUNTS ===");
@@ -335,95 +359,112 @@ const Search = () => {
     }
   }, [searchParams]);
 
-  // DODANA FUNKCJA - obsługa wyszukiwania
+  // Odświeżanie ulubionych
+  useEffect(() => {
+    if (showingFavorites && user) {
+      fetchFavorites();
+    }
+  }, [listings, user]);
+
+  // Obsługa wyszukiwania
   const handleSearchInputChange = (e) => {
     setSearchQuery(e.target.value);
-    setCurrentPage(1); // Reset strony przy nowym wyszukiwaniu
+    setCurrentPage(1);
   };
 
-  // DODANA FUNKCJA - obsługa przycisku Szukaj
+  // Obsługa przycisku Szukaj
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    // Możesz dodać dodatkową logikę, np. analytics
     console.log("Searching for:", searchQuery);
   };
 
-  // POPRAWIONA logika filtrowania z wyszukiwaniem tekstowym
-  const filteredListings = listings.filter((listing) => {
-    console.log("=== FILTERING LISTING ===");
-    console.log(
-      "Listing:",
-      listing.title,
-      listing.category,
-      listing.subcategory
-    );
+  // POPRAWIONA logika filtrowania z wyszukiwaniem tekstowym i ulubionymi
+  const filteredListings = (() => {
+    // Jeśli pokazujemy ulubione, użyj favoriteListings jako podstawy
+    let baseListings = showingFavorites ? favoriteListings : listings;
 
-    // DODANY FILTR TEKSTOWY
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
-      const searchableText = [
+    return baseListings.filter((listing) => {
+      console.log("=== FILTERING LISTING ===");
+      console.log(
+        "Listing:",
         listing.title,
-        listing.description,
-        listing.companyName,
         listing.category,
-        listing.subcategory,
-        listing.location,
-        ...listing.tags
-      ].join(" ").toLowerCase();
+        listing.subcategory
+      );
 
-      if (!searchableText.includes(query)) {
-        console.log("Filtered out by search query");
+      // FILTR TEKSTOWY
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase().trim();
+        const searchableText = [
+          listing.title,
+          listing.description,
+          listing.companyName,
+          listing.category,
+          listing.subcategory,
+          listing.location,
+          ...listing.tags
+        ].join(" ").toLowerCase();
+
+        if (!searchableText.includes(query)) {
+          console.log("Filtered out by search query");
+          return false;
+        }
+      }
+
+      // Filtr cenowy
+      if (listing.price < priceRange[0] || listing.price > priceRange[1]) {
+        console.log("Filtered out by price");
         return false;
       }
-    }
 
-    // Filtr cenowy
-    if (listing.price < priceRange[0] || listing.price > priceRange[1]) {
-      console.log("Filtered out by price");
-      return false;
-    }
+      // Filtr miasta
+      if (selectedCity && listing.location !== selectedCity) {
+        console.log("Filtered out by city");
+        return false;
+      }
 
-    // Filtr miasta
-    if (selectedCity && listing.location !== selectedCity) {
-      console.log("Filtered out by city");
-      return false;
-    }
+      // Jeśli pokazujemy ulubione, nie aplikuj dodatkowych filtrów kategorii
+      if (showingFavorites) {
+        return true;
+      }
 
-    // Jeśli wybrano "WSZYSTKO"
-    if (isEverythingSelected) {
-      console.log("Everything selected - showing all");
-      return true;
-    }
+      // Jeśli wybrano "WSZYSTKO"
+      if (isEverythingSelected) {
+        console.log("Everything selected - showing all");
+        return true;
+      }
 
-    // Sprawdź czy jest jakakolwiek subcategory wybrana
-    const hasAnySelectedSubcategory = Object.values(selectedServices).some(
-      (arr) => arr.length > 0
-    );
+      // Sprawdź czy jest jakakolwiek subcategory wybrana
+      const hasAnySelectedSubcategory = Object.values(selectedServices).some(
+        (arr) => arr.length > 0
+      );
 
-    if (!hasAnySelectedSubcategory) {
-      console.log("No subcategories selected - showing all");
-      return true;
-    }
+      if (!hasAnySelectedSubcategory) {
+        console.log("No subcategories selected - showing all");
+        return true;
+      }
 
-    // Sprawdź czy listing pasuje do wybranych subcategorii
-    const matchesSelectedSubcategory = selectedServices[
-      listing.category
-    ]?.includes(listing.subcategory);
+      // Sprawdź czy listing pasuje do wybranych subcategorii
+      const matchesSelectedSubcategory = selectedServices[
+        listing.category
+      ]?.includes(listing.subcategory);
 
-    console.log("Category:", listing.category);
-    console.log("Subcategory:", listing.subcategory);
-    console.log(
-      "Selected services for category:",
-      selectedServices[listing.category]
-    );
-    console.log("Matches:", matchesSelectedSubcategory);
+      console.log("Category:", listing.category);
+      console.log("Subcategory:", listing.subcategory);
+      console.log(
+        "Selected services for category:",
+        selectedServices[listing.category]
+      );
+      console.log("Matches:", matchesSelectedSubcategory);
 
-    return matchesSelectedSubcategory;
-  });
+      return matchesSelectedSubcategory;
+    });
+  })();
 
   console.log("=== FILTERING RESULTS ===");
   console.log("Search query:", searchQuery);
+  console.log("Showing favorites:", showingFavorites);
   console.log("Total listings:", listings.length);
   console.log("Filtered listings:", filteredListings.length);
   console.log("Selected services:", selectedServices);
@@ -463,6 +504,7 @@ const Search = () => {
   const handleEverythingClick = () => {
     console.log("=== EVERYTHING CLICKED ===");
     setIsEverythingSelected(true);
+    setShowingFavorites(false);
     setSelectedCategoryButtons([]);
     setSelectedServices({
       "Usługi porządkowe": [],
@@ -473,9 +515,26 @@ const Search = () => {
     setCurrentPage(1);
   };
 
+  const handleFavoritesClick = async () => {
+    console.log("=== FAVORITES CLICKED ===");
+    setShowingFavorites(true);
+    setIsEverythingSelected(false);
+    setSelectedCategoryButtons([]);
+    setSelectedServices({
+      "Usługi porządkowe": [],
+      "Zarządzanie nieruchomościami mieszkalnymi": [],
+      "Nieruchomości przemysłowe": [],
+      "Nieruchomości gruntowe": [],
+    });
+    setCurrentPage(1);
+
+    await fetchFavorites();
+  };
+
   const handleCategoryButtonClick = (category) => {
     console.log("=== CATEGORY BUTTON CLICKED ===", category);
     setIsEverythingSelected(false);
+    setShowingFavorites(false);
 
     setSelectedCategoryButtons((prev) => {
       if (prev.includes(category)) {
@@ -501,6 +560,7 @@ const Search = () => {
   const handleServiceChange = (category, subcategory, checked) => {
     console.log("=== SERVICE CHANGE ===", category, subcategory, checked);
     setIsEverythingSelected(false);
+    setShowingFavorites(false);
 
     setSelectedServices((prev) => {
       const updated = { ...prev };
@@ -691,6 +751,18 @@ const Search = () => {
                 >
                   WSZYSTKO
                 </button>
+
+                {user && (
+                  <button
+                    onClick={handleFavoritesClick}
+                    className={`search-category-btn ${
+                      showingFavorites ? "active" : ""
+                    }`}
+                  >
+                    ULUBIONE
+                  </button>
+                )}
+
                 <button
                   onClick={() => handleCategoryButtonClick("Usługi porządkowe")}
                   className={`search-category-btn ${
@@ -857,8 +929,6 @@ const Search = () => {
         </div>
 
         <div className="search-content">
-
-
           <div className="search-view-controls">
             <div
               onClick={() => changeViewMode("list")}
@@ -940,9 +1010,11 @@ const Search = () => {
                 color: "white",
               }}
             >
-              {searchQuery
-                ? `Brak wyników dla "${searchQuery}"`
-                : "Brak ogłoszeń spełniających kryteria wyszukiwania"
+              {showingFavorites
+                ? "Nie masz jeszcze żadnych ulubionych ogłoszeń"
+                : searchQuery
+                  ? `Brak wyników dla "${searchQuery}"`
+                  : "Brak ogłoszeń spełniających kryteria wyszukiwania"
               }
             </div>
           )}

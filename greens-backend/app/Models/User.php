@@ -49,7 +49,8 @@ class User extends Authenticatable
         'allow_messages',
         'search_engine_indexing',
         'subscription_type',
-        'subscription_expires_at'
+        'subscription_expires_at',
+        'favorite_listings',
     ];
 
     /**
@@ -86,6 +87,8 @@ class User extends Authenticatable
         'allow_messages' => 'boolean',
         'search_engine_indexing' => 'boolean',
         'is_active' => 'boolean',
+        'favorite_listings' => 'array',
+
     ];
 
     /**

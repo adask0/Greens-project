@@ -728,6 +728,51 @@ class ListingController extends Controller
         }
     }
 
+    public function toggleFavorite($id): JsonResponse
+    {
+        try {
+            $user = auth()->user();
+            $listing = Listing::findOrFail($id);
+
+            $favoriteListings = $user->favorite_listings ?? [];
+
+            if (is_string($favoriteListings)) {
+                $favoriteListings = json_decode($favoriteListings, true) ?? [];
+            }
+
+            $listingId = (int)$id;
+
+            if (in_array($listingId, $favoriteListings)) {
+                $favoriteListings = array_filter($favoriteListings, function ($fav) use ($listingId) {
+                    return $fav !== $listingId;
+                });
+                $isFavorited = false;
+                $message = 'Usunięto z ulubionych!';
+            } else {
+                $favoriteListings[] = $listingId;
+                $isFavorited = true;
+                $message = 'Dodano do ulubionych!';
+            }
+
+            $user->update(['favorite_listings' => json_encode(array_values($favoriteListings))]);
+
+            return response()->json([
+                'success' => true,
+                'is_favorited' => $isFavorited,
+                'message' => $message
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error toggling favorite: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Wystąpił błąd podczas dodawania do ulubionych'
+            ], 500);
+        }
+    }
+
+
+
     public function contractorToggleStatus(Request $request, $id): JsonResponse
     {
         try {
