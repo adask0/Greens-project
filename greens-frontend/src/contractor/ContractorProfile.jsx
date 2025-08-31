@@ -66,13 +66,11 @@ const ContractorProfile = () => {
     "Tereny inwestycyjne",
   ];
 
-  // Inicjalizacja danych z user z AuthContext
   useEffect(() => {
     if (user) {
       setProfileData((prevData) => ({
         ...prevData,
         ...user,
-        // Upewnij się, że specializations jest tablicą
         specializations: Array.isArray(user.specializations)
           ? user.specializations
           : [],
@@ -80,17 +78,61 @@ const ContractorProfile = () => {
     }
   }, [user]);
 
-  // Funkcja do pobierania URL awatara
   const getAvatarUrl = () => {
+    // 1. Priorytet - user z AuthContext (zawsze aktualne)
+    if (user?.avatar_url) {
+      // Backend już zwraca pełny URL
+      return user.avatar_url;
+    }
+
+    if (user?.avatar) {
+      if (user.avatar.startsWith('http')) {
+        return user.avatar;
+      }
+      // Jeśli avatar zaczyna się od "avatars/", użyj bez dodatkowego "avatars/"
+      const avatarPath = user.avatar.startsWith('avatars/')
+        ? user.avatar.replace('avatars/', '')
+        : user.avatar;
+      return `http://127.0.0.1:8000/storage/avatars/${avatarPath}`;
+    }
+
+    // 2. Fallback - localStorage (tylko jako cache)
+    const companyData = localStorage.getItem("company");
+    if (companyData) {
+      try {
+        const company = JSON.parse(companyData);
+        if (company.avatar_url) {
+          return company.avatar_url;
+        }
+        if (company.avatar) {
+          if (company.avatar.startsWith('http')) {
+            return company.avatar;
+          }
+          const avatarPath = company.avatar.startsWith('avatars/')
+            ? company.avatar.replace('avatars/', '')
+            : company.avatar;
+          return `http://127.0.0.1:8000/storage/avatars/${avatarPath}`;
+        }
+      } catch (e) {
+        // ignore parse error
+      }
+    }
+
+    // 3. Fallback - profileData (lokalny stan)
+    if (profileData.avatar_url) {
+      return profileData.avatar_url;
+    }
+
     if (profileData.avatar) {
-      // Jeśli avatar jest pełnym URL (zaczyna się od http)
       if (profileData.avatar.startsWith('http')) {
         return profileData.avatar;
       }
-      // Jeśli avatar to tylko nazwa pliku, dodaj base URL
-      return `${window.location.origin}/storage/avatars/${profileData.avatar}`;
+      const avatarPath = profileData.avatar.startsWith('avatars/')
+        ? profileData.avatar.replace('avatars/', '')
+        : profileData.avatar;
+      return `http://127.0.0.1:8000/storage/avatars/${avatarPath}`;
     }
-    // Fallback do domyślnego awatara
+
     return Avatar;
   };
 
@@ -118,7 +160,6 @@ const ContractorProfile = () => {
     try {
       const response = await api.put("/contractor/profile", profileData);
 
-      // Aktualizuj dane w localStorage jeśli to firma
       if (response.data.company) {
         localStorage.setItem("company", JSON.stringify(response.data.company));
       }
@@ -128,12 +169,9 @@ const ContractorProfile = () => {
         text: "Profil został zaktualizowany pomyślnie!",
       });
     } catch (error) {
-      console.error("Błąd podczas aktualizacji profilu:", error);
       setMessage({
         type: "error",
-        text:
-          error.response?.data?.message ||
-          "Nie udało się zaktualizować profilu",
+        text: error.response?.data?.message || "Nie udało się zaktualizować profilu",
       });
     } finally {
       setSaving(false);
@@ -144,7 +182,6 @@ const ContractorProfile = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Sprawdź typ pliku
     if (!file.type.startsWith('image/')) {
       setMessage({
         type: "error",
@@ -153,7 +190,6 @@ const ContractorProfile = () => {
       return;
     }
 
-    // Sprawdź rozmiar pliku (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setMessage({
         type: "error",
@@ -173,23 +209,35 @@ const ContractorProfile = () => {
         },
       });
 
-      // Aktualizuj avatar w stanie lokalnym
+      const newAvatar = response.data.avatar || response.data.avatar_url;
+
+      // 1. Aktualizuj lokalny stan
       setProfileData((prev) => ({
         ...prev,
-        avatar: response.data.avatar || response.data.avatar_url,
+        avatar: newAvatar,
       }));
 
-      // Aktualizuj dane w localStorage
+      // 2. Aktualizuj localStorage jako cache
       const companyData = JSON.parse(localStorage.getItem("company") || "{}");
-      companyData.avatar = response.data.avatar || response.data.avatar_url;
+      companyData.avatar = newAvatar;
       localStorage.setItem("company", JSON.stringify(companyData));
+
+      // 3. WAŻNE: Pobierz zaktualizowane dane użytkownika z serwera
+      // Żeby AuthContext miał aktualne dane
+      try {
+        const profileResponse = await api.get("/contractor/profile");
+        // Tu powinieneś zaktualizować AuthContext - w zależności od implementacji
+        // np. refetch user data lub trigger refresh
+      } catch (error) {
+        console.error("Error refreshing user data:", error);
+      }
 
       setMessage({
         type: "success",
         text: "Zdjęcie profilowe zostało zaktualizowane!",
       });
+
     } catch (error) {
-      console.error("Błąd podczas zmiany avatara:", error);
       setMessage({
         type: "error",
         text: error.response?.data?.message || "Nie udało się zaktualizować zdjęcia profilowego",
@@ -234,9 +282,7 @@ const ContractorProfile = () => {
           Dane Firmy
         </button>
         <button
-          className={`tab-btn ${
-            activeTab === "specializations" ? "active" : ""
-          }`}
+          className={`tab-btn ${activeTab === "specializations" ? "active" : ""}`}
           onClick={() => setActiveTab("specializations")}
         >
           Specjalizacje
@@ -260,7 +306,7 @@ const ContractorProfile = () => {
                   src={getAvatarUrl()}
                   alt="Avatar"
                   onError={(e) => {
-                    e.target.src = Avatar; // Fallback do domyślnego awatara jeśli błąd
+                    e.target.src = Avatar;
                   }}
                 />
                 <label className="contractor-avatar-upload">
@@ -366,9 +412,7 @@ const ContractorProfile = () => {
                 <input
                   type="text"
                   value={profileData.company_name || ""}
-                  onChange={(e) =>
-                    handleInputChange("company_name", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("company_name", e.target.value)}
                   placeholder="Nazwa Sp. z o.o."
                 />
               </div>
@@ -398,9 +442,7 @@ const ContractorProfile = () => {
               <label>Opis firmy</label>
               <textarea
                 value={profileData.company_description || ""}
-                onChange={(e) =>
-                  handleInputChange("company_description", e.target.value)
-                }
+                onChange={(e) => handleInputChange("company_description", e.target.value)}
                 placeholder="Opisz swoją firmę, historię, misję i wartości..."
                 rows="4"
               />
@@ -412,9 +454,7 @@ const ContractorProfile = () => {
                 <input
                   type="text"
                   value={profileData.subscription || ""}
-                  onChange={(e) =>
-                    handleInputChange("subscription", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("subscription", e.target.value)}
                   placeholder="12 mies."
                   disabled
                 />
@@ -436,11 +476,7 @@ const ContractorProfile = () => {
                 <label>Data zakończenia subskrypcji</label>
                 <input
                   type="date"
-                  value={
-                    profileData.subscription_end_date
-                      ? profileData.subscription_end_date.split(" ")[0]
-                      : ""
-                  }
+                  value={profileData.subscription_end_date ? profileData.subscription_end_date.split(" ")[0] : ""}
                   disabled
                 />
               </div>
@@ -449,9 +485,7 @@ const ContractorProfile = () => {
                 <label>Konto aktywne</label>
                 <select
                   value={profileData.is_active ? "1" : "0"}
-                  onChange={(e) =>
-                    handleInputChange("is_active", e.target.value === "1")
-                  }
+                  onChange={(e) => handleInputChange("is_active", e.target.value === "1")}
                   disabled
                 >
                   <option value="1">Aktywne</option>
@@ -474,29 +508,18 @@ const ContractorProfile = () => {
                 <label
                   key={specialization}
                   className={`contractor-specialization-item ${
-                    (profileData.specializations || []).includes(specialization)
-                      ? "selected"
-                      : ""
+                    (profileData.specializations || []).includes(specialization) ? "selected" : ""
                   }`}
                 >
                   <input
                     type="checkbox"
-                    checked={(profileData.specializations || []).includes(
-                      specialization
-                    )}
+                    checked={(profileData.specializations || []).includes(specialization)}
                     onChange={() => handleSpecializationToggle(specialization)}
                     style={{ display: "none" }}
                   />
                   <div className="contractor-specialization-checkbox">
-                    {(profileData.specializations || []).includes(
-                      specialization
-                    ) && (
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="white"
-                      >
+                    {(profileData.specializations || []).includes(specialization) && (
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="white">
                         <path
                           d="M10 3L4.5 8.5L2 6"
                           stroke="white"
@@ -525,9 +548,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.email_new_messages || false}
-                    onChange={(e) =>
-                      handleInputChange("email_new_messages", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("email_new_messages", e.target.checked)}
                   />
                   Nowe wiadomości
                 </label>
@@ -537,9 +558,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.email_new_reviews || false}
-                    onChange={(e) =>
-                      handleInputChange("email_new_reviews", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("email_new_reviews", e.target.checked)}
                   />
                   Nowe oceny
                 </label>
@@ -549,12 +568,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.email_listing_updates || false}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "email_listing_updates",
-                        e.target.checked
-                      )
-                    }
+                    onChange={(e) => handleInputChange("email_listing_updates", e.target.checked)}
                   />
                   Aktualizacje ofert
                 </label>
@@ -564,9 +578,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.email_promotional || false}
-                    onChange={(e) =>
-                      handleInputChange("email_promotional", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("email_promotional", e.target.checked)}
                   />
                   Materiały promocyjne
                 </label>
@@ -580,9 +592,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.sms_new_messages || false}
-                    onChange={(e) =>
-                      handleInputChange("sms_new_messages", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("sms_new_messages", e.target.checked)}
                   />
                   Nowe wiadomości
                 </label>
@@ -592,12 +602,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.sms_urgent_notifications || false}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "sms_urgent_notifications",
-                        e.target.checked
-                      )
-                    }
+                    onChange={(e) => handleInputChange("sms_urgent_notifications", e.target.checked)}
                   />
                   Pilne powiadomienia
                 </label>
@@ -611,9 +616,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.push_new_messages || false}
-                    onChange={(e) =>
-                      handleInputChange("push_new_messages", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("push_new_messages", e.target.checked)}
                   />
                   Nowe wiadomości
                 </label>
@@ -623,9 +626,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.push_new_reviews || false}
-                    onChange={(e) =>
-                      handleInputChange("push_new_reviews", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("push_new_reviews", e.target.checked)}
                   />
                   Nowe oceny
                 </label>
@@ -638,9 +639,7 @@ const ContractorProfile = () => {
                 <label>Widoczność profilu</label>
                 <select
                   value={profileData.profile_visibility || "public"}
-                  onChange={(e) =>
-                    handleInputChange("profile_visibility", e.target.value)
-                  }
+                  onChange={(e) => handleInputChange("profile_visibility", e.target.value)}
                 >
                   <option value="public">Publiczny</option>
                   <option value="private">Prywatny</option>
@@ -651,9 +650,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.show_phone || false}
-                    onChange={(e) =>
-                      handleInputChange("show_phone", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("show_phone", e.target.checked)}
                   />
                   Pokazuj numer telefonu
                 </label>
@@ -663,9 +660,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.show_email || false}
-                    onChange={(e) =>
-                      handleInputChange("show_email", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("show_email", e.target.checked)}
                   />
                   Pokazuj email
                 </label>
@@ -675,9 +670,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.allow_reviews || false}
-                    onChange={(e) =>
-                      handleInputChange("allow_reviews", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("allow_reviews", e.target.checked)}
                   />
                   Pozwalaj na oceny
                 </label>
@@ -687,9 +680,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.allow_messages || false}
-                    onChange={(e) =>
-                      handleInputChange("allow_messages", e.target.checked)
-                    }
+                    onChange={(e) => handleInputChange("allow_messages", e.target.checked)}
                   />
                   Pozwalaj na wiadomości
                 </label>
@@ -699,12 +690,7 @@ const ContractorProfile = () => {
                   <input
                     type="checkbox"
                     checked={profileData.search_engine_indexing || false}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "search_engine_indexing",
-                        e.target.checked
-                      )
-                    }
+                    onChange={(e) => handleInputChange("search_engine_indexing", e.target.checked)}
                   />
                   Indeksowanie przez wyszukiwarki
                 </label>
@@ -714,11 +700,7 @@ const ContractorProfile = () => {
         )}
 
         <div className="contractor-profile-actions">
-          <button
-            type="submit"
-            disabled={saving}
-            className="contractor-btn-save"
-          >
+          <button type="submit" disabled={saving} className="contractor-btn-save">
             {saving ? "Zapisywanie..." : "Zapisz zmiany"}
           </button>
         </div>

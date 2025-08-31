@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext"; // Dodaj import useAuth
+import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 import Avatar from "../assets/Avatar.png";
 import "../styles/contractor-listings.css";
 
 const ContractorListings = () => {
-  const { user } = useAuth(); // Dodaj hook useAuth
+  const { user } = useAuth();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -14,7 +14,7 @@ const ContractorListings = () => {
   const [selectedImages, setSelectedImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [currentImages, setCurrentImages] = useState([]);
-  const [userProfile, setUserProfile] = useState(null); // Dodaj state dla profilu użytkownika
+  const [userProfile, setUserProfile] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -58,12 +58,9 @@ const ContractorListings = () => {
     ],
   };
 
-  // Funkcja do pobierania profilu użytkownika
   const fetchUserProfile = async () => {
     try {
-      console.log("=== FETCHING USER PROFILE FOR AUTOFILL ===");
-      const response = await api.get("/user/profile");
-      console.log("User profile response:", response.data);
+      const response = await api.get("/contractor/profile");
 
       let profileData = {};
       if (response.data?.data) {
@@ -72,11 +69,9 @@ const ContractorListings = () => {
         profileData = response.data;
       }
 
-      console.log("Processed profile data:", profileData);
       setUserProfile(profileData);
     } catch (error) {
       console.error("Błąd podczas pobierania profilu użytkownika:", error);
-      // Fallback - użyj danych z AuthContext
       if (user) {
         setUserProfile(user);
       }
@@ -85,7 +80,6 @@ const ContractorListings = () => {
 
   useEffect(() => {
     fetchListings();
-    // Pobierz profil użytkownika przy załadowaniu komponentu
     if (user) {
       fetchUserProfile();
     }
@@ -93,9 +87,7 @@ const ContractorListings = () => {
 
   const fetchListings = async () => {
     try {
-      console.log("=== FETCHING CONTRACTOR LISTINGS ===");
       const response = await api.get("/contractor/listings");
-      console.log("Contractor listings response:", response.data);
 
       let listingsData = [];
       if (response.data?.data?.data) {
@@ -106,7 +98,6 @@ const ContractorListings = () => {
         listingsData = response.data;
       }
 
-      console.log("Processed listings data:", listingsData);
       setListings(listingsData);
     } catch (error) {
       console.error("Błąd podczas pobierania ogłoszeń:", error);
@@ -125,7 +116,6 @@ const ContractorListings = () => {
       [field]: value,
     }));
 
-    // Reset subcategory when category changes
     if (field === "category") {
       setFormData((prev) => ({
         ...prev,
@@ -137,24 +127,19 @@ const ContractorListings = () => {
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
 
-    console.log("=== IMAGE SELECT DEBUG ===");
-    console.log("Selected files:", files);
-    console.log("Files count:", files.length);
-
     if (files.length === 0) {
-      console.log("No files selected");
       return;
     }
 
-    if (files.length > 10) {
+    const totalFiles = selectedImages.length + files.length;
+    if (totalFiles > 10) {
       setMessage({
         type: "error",
-        text: "Możesz wybrać maksymalnie 10 zdjęć",
+        text: `Możesz wybrać maksymalnie 10 zdjęć. Aktualnie masz ${selectedImages.length}, próbujesz dodać ${files.length}`,
       });
       return;
     }
 
-    // Sprawdź typy plików
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     const invalidFiles = files.filter(
       (file) => !allowedTypes.includes(file.type)
@@ -168,7 +153,6 @@ const ContractorListings = () => {
       return;
     }
 
-    // Sprawdź rozmiar plików
     const oversizedFiles = files.filter((file) => file.size > 5 * 1024 * 1024);
     if (oversizedFiles.length > 0) {
       setMessage({
@@ -180,9 +164,9 @@ const ContractorListings = () => {
       return;
     }
 
-    console.log("Files validated successfully");
-    setSelectedImages(files);
+    setSelectedImages(prevImages => [...prevImages, ...files]);
     setMessage({ type: "", text: "" });
+    e.target.value = '';
   };
 
   const uploadImages = async (listingId) => {
@@ -254,10 +238,6 @@ const ContractorListings = () => {
     setMessage({ type: "", text: "" });
 
     try {
-      console.log("=== SUBMITTING FORM ===");
-      console.log("Form data:", formData);
-      console.log("Editing listing:", editingListing);
-
       let response;
       if (editingListing) {
         response = await api.put(
@@ -275,18 +255,15 @@ const ContractorListings = () => {
           text: "Ogłoszenie zostało dodane!",
         });
 
-        // Upload images for new listing
         if (selectedImages.length > 0 && response.data?.data?.id) {
           await uploadImages(response.data.data.id);
         }
       }
 
-      console.log("Submit response:", response.data);
       resetForm();
       fetchListings();
     } catch (error) {
       console.error("Błąd podczas zapisywania ogłoszenia:", error);
-      console.error("Error response:", error.response?.data);
       setMessage({
         type: "error",
         text:
@@ -296,9 +273,6 @@ const ContractorListings = () => {
   };
 
   const handleEdit = async (listing) => {
-    console.log("=== EDITING LISTING ===");
-    console.log("Listing to edit:", listing);
-
     setEditingListing(listing);
     setFormData({
       title: listing.title || "",
@@ -313,7 +287,6 @@ const ContractorListings = () => {
       status: listing.status || "active",
     });
 
-    // Fetch current images
     if (listing.id) {
       await fetchCurrentImages(listing.id);
     }
@@ -385,11 +358,7 @@ const ContractorListings = () => {
     }
   };
 
-  // ZMIENIONA FUNKCJA - wypełnia dane z profilu użytkownika
   const resetForm = () => {
-    console.log("=== RESETTING FORM WITH USER PROFILE DATA ===");
-    console.log("User profile:", userProfile);
-
     setFormData({
       title: "",
       description: "",
@@ -397,9 +366,9 @@ const ContractorListings = () => {
       price: "",
       category: "",
       subcategory: "",
-      location: userProfile?.city || "", // Automatycznie wypełnij miasto
-      phone: userProfile?.phone || "", // Automatycznie wypełnij telefon
-      email: userProfile?.email || "", // Automatycznie wypełnij email
+      location: userProfile?.city || "",
+      phone: userProfile?.phone || "",
+      email: userProfile?.email || "",
       status: "active",
     });
     setEditingListing(null);
@@ -408,11 +377,7 @@ const ContractorListings = () => {
     setCurrentImages([]);
   };
 
-  // NOWA FUNKCJA - otwiera formularz z wypełnionymi danymi
   const handleAddNewListing = () => {
-    console.log("=== OPENING NEW LISTING FORM ===");
-    console.log("User profile for autofill:", userProfile);
-
     setEditingListing(null);
     setFormData({
       title: "",
@@ -421,9 +386,9 @@ const ContractorListings = () => {
       price: "",
       category: "",
       subcategory: "",
-      location: userProfile?.city || "", // Automatycznie wypełnij miasto
-      phone: userProfile?.phone || "", // Automatycznie wypełnij telefon
-      email: userProfile?.email || "", // Automatycznie wypełnij email
+      location: userProfile?.city || "",
+      phone: userProfile?.phone || "",
+      email: userProfile?.email || "",
       status: "active",
     });
     setSelectedImages([]);
@@ -461,7 +426,7 @@ const ContractorListings = () => {
       <div className="contractor-listings-header">
         <h2>Moje Oferty</h2>
         <button
-          onClick={handleAddNewListing} // ZMIENIONO - używa nowej funkcji
+          onClick={handleAddNewListing}
           className="contractor-btn-add"
         >
           + Dodaj nową ofertę
@@ -611,7 +576,6 @@ const ContractorListings = () => {
                 />
               </div>
 
-              {/* Upload zdjęć */}
               <div className="contractor-form-group">
                 <label>Zdjęcia (maksymalnie 10, do 5MB każde)</label>
                 <div className="file-input-wrapper">
@@ -678,7 +642,6 @@ const ContractorListings = () => {
                 )}
               </div>
 
-              {/* Aktualne zdjęcia (tylko podczas edycji) */}
               {editingListing && currentImages.length > 0 && (
                 <div className="contractor-form-group">
                   <label>Aktualne zdjęcia</label>
@@ -750,7 +713,7 @@ const ContractorListings = () => {
           <div className="contractor-listings-empty">
             <p>Nie masz jeszcze żadnych ofert</p>
             <button
-              onClick={handleAddNewListing} // ZMIENIONO - używa nowej funkcji
+              onClick={handleAddNewListing}
               className="contractor-btn-add"
             >
               Dodaj pierwszą ofertę

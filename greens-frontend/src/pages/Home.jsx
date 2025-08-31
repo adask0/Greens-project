@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
 import api from "../services/api";
 import "../styles/home.css";
 
@@ -23,6 +24,17 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isConsentChecked, setIsConsentChecked] = useState(false);
+
+  // Stany dla formularza kontaktowego
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    message: ''
+  });
+  const [captchaValue, setCaptchaValue] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -123,6 +135,80 @@ const Home = () => {
     }
 
     return stars;
+  };
+
+  // Obsługa zmian w formularzu
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Obsługa captcha
+  const handleCaptchaChange = (value) => {
+    setCaptchaValue(value);
+  };
+
+  // Obsługa wysyłania formularza
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Walidacja
+    if (!formData.name || !formData.email || !formData.message) {
+      setSubmitMessage('Proszę wypełnić wszystkie wymagane pola.');
+      return;
+    }
+
+    if (!isConsentChecked) {
+      setSubmitMessage('Proszę wyrazić zgodę na przetwarzanie danych osobowych.');
+      return;
+    }
+
+    if (!captchaValue) {
+      setSubmitMessage('Proszę potwierdzić captchę.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitMessage('');
+
+    try {
+      // Wysyłanie maila przez Laravel API
+      const response = await api.post('/contact', {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        message: formData.message,
+        'g-recaptcha-response': captchaValue
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        setSubmitMessage('Wiadomość została wysłana pomyślnie!');
+        // Resetowanie formularza
+        setFormData({
+          name: '',
+          phone: '',
+          email: '',
+          message: ''
+        });
+        setIsConsentChecked(false);
+        setCaptchaValue(null);
+        // Reset captcha
+        if (window.grecaptcha) {
+          window.grecaptcha.reset();
+        }
+      }
+    } catch (error) {
+      console.error('Błąd przy wysyłaniu wiadomości:', error);
+      const errorMessage = error.response?.data?.message ||
+                          error.response?.data?.error ||
+                          'Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.';
+      setSubmitMessage(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -333,39 +419,61 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="home-contact-form">
+        <form className="home-contact-form" onSubmit={handleSubmit}>
           <div className="home-contact-form-row">
             <label className="home-contact-form-label">
-              <span className="input-title">Imię:</span>
+              <span className="input-title">Imię: *</span>
               <input
                 type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
                 placeholder="Karolina"
                 className="home-contact-form-input"
+                required
               />
             </label>
             <label className="home-contact-form-label">
               <span className="input-title">Telefon:</span>
               <input
                 type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
                 placeholder="+48 000 000 000"
                 className="home-contact-form-input"
               />
             </label>
             <label className="home-contact-form-label">
-              <span className="input-title">E-mail:</span>
+              <span className="input-title">E-mail: *</span>
               <input
                 type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
                 placeholder="example@gmail.com"
                 className="home-contact-form-input"
+                required
               />
             </label>
           </div>
 
           <textarea
-            placeholder="Twoja wiadomość"
+            name="message"
+            value={formData.message}
+            onChange={handleInputChange}
+            placeholder="Twoja wiadomość *"
             rows={isMobile ? "6" : "8"}
             className="home-contact-form-textarea"
+            required
           ></textarea>
+
+          <div className="home-contact-form-captcha">
+            <ReCAPTCHA
+              sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"}
+              onChange={handleCaptchaChange}
+            />
+          </div>
 
           <label className="home-contact-form-consent">
             <input
@@ -403,14 +511,22 @@ const Home = () => {
             <span className="home-contact-form-consent-text">
               Wyrażam zgodę na przetwarzanie moich danych osobowych zgodnie z
               Rozporządzeniem o Ochronie Danych Osobowych w celu realizacji
-              zgłoszenia.
+              zgłoszenia. *
             </span>
           </label>
 
+          {submitMessage && (
+            <div className={`home-contact-form-message ${submitMessage.includes('pomyślnie') ? 'success' : 'error'}`}>
+              {submitMessage}
+            </div>
+          )}
+
           <div className="home-contact-form-submit">
-            <button type="submit">Wyślij</button>
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Wysyłanie...' : 'Wyślij'}
+            </button>
           </div>
-        </div>
+        </form>
       </section>
     </div>
   );

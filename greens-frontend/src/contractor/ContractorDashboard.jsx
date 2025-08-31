@@ -24,13 +24,7 @@ const ContractorDashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    console.log("Dane użytkownika z AuthContext:", user);
-  }, [user]);
-
-  // Redirect to profile if on main dashboard route
-  useEffect(() => {
-    const currentPath = location.pathname;
-    if (currentPath === "/contractor" || currentPath === "/contractor/") {
+    if (location.pathname === "/contractor" || location.pathname === "/contractor/") {
       navigate("/contractor/profile", { replace: true });
     }
   }, [location.pathname, navigate]);
@@ -98,12 +92,45 @@ const ContractorDashboard = () => {
   };
 
   const getAvatarUrl = () => {
+    // 1. Priorytet - user z AuthContext (zawsze aktualne)
+    if (user?.avatar_url) {
+      // Backend już zwraca pełny URL
+      return user.avatar_url;
+    }
+
     if (user?.avatar) {
       if (user.avatar.startsWith('http')) {
         return user.avatar;
       }
-      return `${window.location.origin}/storage/avatars/${user.avatar}`;
+      // Jeśli avatar zaczyna się od "avatars/", użyj bez dodatkowego "avatars/"
+      const avatarPath = user.avatar.startsWith('avatars/')
+        ? user.avatar.replace('avatars/', '')
+        : user.avatar;
+      return `http://127.0.0.1:8000/storage/avatars/${avatarPath}`;
     }
+
+    // 2. Fallback - localStorage (tylko jako cache)
+    const companyData = localStorage.getItem("company");
+    if (companyData) {
+      try {
+        const company = JSON.parse(companyData);
+        if (company.avatar_url) {
+          return company.avatar_url;
+        }
+        if (company.avatar) {
+          if (company.avatar.startsWith('http')) {
+            return company.avatar;
+          }
+          const avatarPath = company.avatar.startsWith('avatars/')
+            ? company.avatar.replace('avatars/', '')
+            : company.avatar;
+          return `http://127.0.0.1:8000/storage/avatars/${avatarPath}`;
+        }
+      } catch (e) {
+        // ignore parse error
+      }
+    }
+
     return Avatar;
   };
 

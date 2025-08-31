@@ -20,6 +20,8 @@ const RegisterCompany = () => {
   const [avatar, setAvatar] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { login } = useAuth();
 
@@ -88,7 +90,10 @@ const RegisterCompany = () => {
           }
         }
 
-        window.location.href = "/contractor";
+        // Pokazuj loading przez 1.5 sekundy dla lepszego UX
+        setTimeout(() => {
+          window.location.href = "/contractor";
+        }, 1500);
       } else {
         alert("Firma została zarejestrowana! Teraz możesz się zalogować.");
         window.location.href = "/login";
@@ -106,7 +111,6 @@ const RegisterCompany = () => {
             "Błąd rejestracji. Sprawdź dane i spróbuj ponownie."
         );
       }
-    } finally {
       setLoading(false);
     }
   };
@@ -147,6 +151,14 @@ const RegisterCompany = () => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
   const labelStyles = {
     display: "block",
     marginBottom: "0.5rem",
@@ -165,6 +177,24 @@ const RegisterCompany = () => {
     boxShadow: "5px 5px rgba(249, 115, 22, 1)",
   };
 
+  const passwordContainerStyles = {
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+  };
+
+  const eyeButtonStyles = {
+    position: "absolute",
+    right: "10px",
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    padding: "5px",
+    color: "#666",
+    fontSize: "18px",
+    zIndex: 1,
+  };
+
   return (
     <div
       style={{
@@ -172,8 +202,60 @@ const RegisterCompany = () => {
         backgroundColor: "#45964d",
         fontFamily: "Poppins, sans-serif",
         color: "white",
+        position: "relative",
       }}
     >
+      {/* Loading Overlay */}
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(69, 150, 77, 0.9)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+            flexDirection: "column",
+            gap: "20px",
+          }}
+        >
+          <div
+            style={{
+              width: "50px",
+              height: "50px",
+              border: "4px solid rgba(255, 255, 255, 0.3)",
+              borderTop: "4px solid white",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+            }}
+          ></div>
+          <p
+            style={{
+              fontSize: "18px",
+              fontWeight: "500",
+              color: "white",
+              margin: 0,
+            }}
+          >
+            Rejestracja firmy...
+          </p>
+        </div>
+      )}
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+
       <Header />
 
       <main
@@ -233,6 +315,7 @@ const RegisterCompany = () => {
               accept="image/*"
               onChange={handleAvatarChange}
               style={{ display: "none" }}
+              disabled={loading}
             />
 
             {/* Nazwa firmy z awatarem */}
@@ -252,14 +335,15 @@ const RegisterCompany = () => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    cursor: "pointer",
+                    cursor: loading ? "not-allowed" : "pointer",
                     flexShrink: 0,
                     transition: "all 0.2s ease",
                     position: "relative",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)"
+                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+                    opacity: loading ? 0.5 : 1,
                   }}
-                  onClick={handleAvatarClick}
-                  title="Kliknij aby dodać logo firmy"
+                  onClick={loading ? undefined : handleAvatarClick}
+                  title={loading ? "Ładowanie..." : "Kliknij aby dodać logo firmy"}
                 >
                   {avatar ? (
                     <img
@@ -318,6 +402,7 @@ const RegisterCompany = () => {
                     placeholder="PHU BUD PERFECT"
                     style={inputStyles}
                     required
+                    disabled={loading}
                   />
                   <div style={{
                     fontSize: "0.75rem",
@@ -348,6 +433,7 @@ const RegisterCompany = () => {
                   placeholder="kontakt@firma.pl"
                   style={inputStyles}
                   required
+                  disabled={loading}
                 />
               </div>
               <div style={{ flex: 1 }}>
@@ -360,6 +446,7 @@ const RegisterCompany = () => {
                   placeholder="+48 123 456 789"
                   style={inputStyles}
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -381,6 +468,7 @@ const RegisterCompany = () => {
                   placeholder="Warszawa"
                   style={inputStyles}
                   required
+                  disabled={loading}
                 />
               </div>
               <div style={{ flex: 1 }}>
@@ -392,6 +480,7 @@ const RegisterCompany = () => {
                   placeholder="ul. Przykładowa 123"
                   style={inputStyles}
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -412,6 +501,7 @@ const RegisterCompany = () => {
                   onChange={handleChange}
                   placeholder="1234567890"
                   style={inputStyles}
+                  disabled={loading}
                 />
               </div>
               <div style={{ flex: 1 }}>
@@ -429,28 +519,106 @@ const RegisterCompany = () => {
             >
               <div style={{ flex: 1 }}>
                 <label style={labelStyles}>Hasło:</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••••••••••"
-                  style={inputStyles}
-                  required
-                  minLength={8}
-                />
+                <div style={passwordContainerStyles}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••••••••••"
+                    style={inputStyles}
+                    required
+                    minLength={8}
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    style={eyeButtonStyles}
+                    disabled={loading}
+                  >
+                    {showPassword ? (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
               <div style={{ flex: 1 }}>
                 <label style={labelStyles}>Powtórz hasło:</label>
-                <input
-                  type="password"
-                  name="password_confirmation"
-                  value={formData.password_confirmation}
-                  onChange={handleChange}
-                  placeholder="••••••••••••••••"
-                  style={inputStyles}
-                  required
-                />
+                <div style={passwordContainerStyles}>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="password_confirmation"
+                    value={formData.password_confirmation}
+                    onChange={handleChange}
+                    placeholder="••••••••••••••••"
+                    style={inputStyles}
+                    required
+                    disabled={loading}
+                  />
+                  <button
+                    type="button"
+                    onClick={toggleConfirmPasswordVisibility}
+                    style={eyeButtonStyles}
+                    disabled={loading}
+                  >
+                    {showConfirmPassword ? (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -469,8 +637,25 @@ const RegisterCompany = () => {
                   cursor: loading ? "not-allowed" : "pointer",
                   width: isMobile ? "100%" : "auto",
                   transition: "background-color 0.2s",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  margin: isMobile ? "0 auto" : "0",
                 }}
               >
+                {loading && (
+                  <div
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      border: "2px solid transparent",
+                      borderTop: "2px solid white",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  ></div>
+                )}
                 {loading ? "Rejestracja..." : "Zostań kontrachentem"}
               </button>
             </div>
@@ -484,6 +669,8 @@ const RegisterCompany = () => {
             alignItems: "center",
             justifyContent: "center",
             marginTop: isMobile ? "3rem" : "0",
+            opacity: loading ? 0.3 : 1,
+            transition: "opacity 0.3s ease",
           }}
         >
           <img

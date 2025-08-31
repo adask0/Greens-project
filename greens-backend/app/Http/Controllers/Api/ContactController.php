@@ -54,14 +54,16 @@ class ContactController extends Controller
 
         try {
             // Zapisz wiadomość w bazie danych (opcjonalne)
-            $contact = Contact::create([
+            $contact = \DB::table('contact_message')->insert([
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'message' => $request->message,
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
-                'status' => 'new'
+                'status' => 'new',
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
 
             // Wyślij email do administratora
