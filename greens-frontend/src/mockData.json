@@ -1,0 +1,268 @@
+[
+  {
+    "id": 1,
+    "title": "Sprzątanie biur",
+    "description": "Profesjonalne sprzątanie powierzchni biurowych",
+    "longDescription": "Oferujemy kompleksowe usługi sprzątania biur dla firm każdej wielkości. Nasze doświadczenie wynosi ponad 10 lat, a zespół składa się z wykwalifikowanych specjalistów. Używamy tylko profesjonalnego sprzętu i ekologicznych środków czyszczących, które są bezpieczne dla zdrowia i środowiska.",
+    "price": 150,
+    "rating": 4.8,
+    "category": "Usługi porządkowe",
+    "subcategory": "Porządkowe",
+    "companyName": "CleanPro Warszawa",
+    "location": "Warszawa",
+    "phone": "+48 123 456 789",
+    "email": "kontakt@cleanpro.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": [
+      "../assets/person1.png",
+      "../assets/person2.png",
+      "../assets/person3.png"
+    ],
+    "tags": ["Wulkanizacja", "Klimatyzacja"],
+    "experience": "Posiadamy 10-letnie doświadczenie w branży sprzątającej. Obsługujemy zarówno małe biura, jak i duże kompleksy biurowe. Nasz zespół przeszedł specjalistyczne szkolenia z zakresu profesjonalnego sprzątania.",
+    "socialMedia": {
+      "facebook": "https://facebook.com/cleanpro",
+      "instagram": "https://instagram.com/cleanpro",
+      "linkedin": "",
+      "youtube": ""
+    }
+  },
+  {
+    "id": 2,
+    "title": "Zarządzanie blokiem mieszkalnym",
+    "description": "Kompleksowe zarządzanie nieruchomościami",
+    "longDescription": "Świadczymy usługi zarządzania nieruchomościami mieszkalnymi z pełnym zakresem obowiązków administratora. Zajmujemy się obsługą techniczną, finansową oraz prawną wspólnot mieszkaniowych.",
+    "price": 300,
+    "rating": 4.5,
+    "category": "Zarządzanie nieruchomościami mieszkalnymi",
+    "subcategory": "Mieszkalnictwo",
+    "companyName": "Zarządca Pro",
+    "location": "Warszawa",
+    "phone": "+48 234 567 890",
+    "email": "biuro@zarzadcapro.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": [
+      "../assets/person2.png",
+      "../assets/person1.png",
+      "../assets/person4.png"
+    ],
+    "tags": ["Mechanika", "Lakier"],
+    "experience": "15 lat doświadczenia w zarządzaniu nieruchomościami. Obsługujemy ponad 200 wspólnot mieszkaniowych w Warszawie i okolicach. Nasz zespół składa się z wykwalifikowanych prawników, księgowych i techników.",
+    "socialMedia": {
+      "facebook": "https://facebook.com/zarzadcapro",
+      "instagram": "",
+      "linkedin": "https://linkedin.com/company/zarzadcapro",
+      "youtube": "https://youtube.com/zarzadcapro"
+    }
+  },
+  {
+    "id": 3,
+    "title": "Konserwacja hali przemysłowej",
+    "description": "Utrzymanie obiektów przemysłowych",
+    "longDescription": "Specjalizujemy się w kompleksowej konserwacji hal przemysłowych, magazynów i obiektów produkcyjnych. Oferujemy regularne przeglądy techniczne, naprawy oraz modernizację infrastruktury przemysłowej.",
+    "price": 250,
+    "rating": 4.9,
+    "category": "Nieruchomości przemysłowe",
+    "subcategory": "Przemysłowe",
+    "companyName": "Industrial Service",
+    "location": "Warszawa",
+    "phone": "+48 345 678 901",
+    "email": "serwis@industrial.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": [
+      "../assets/person3.png",
+      "../assets/person4.png",
+      "../assets/person1.png",
+      "../assets/person2.png"
+    ],
+    "tags": ["Wulkanizacja", "Mechanika", "Klimatyzacja"],
+    "experience": "Ponad 20 lat doświadczenia w sektorze przemysłowym. Współpracujemy z największymi firmami produkcyjnymi w Polsce. Posiadamy certyfikaty ISO oraz licencje na obsługę urządzeń przemysłowych.",
+    "socialMedia": {
+      "facebook": "",
+      "instagram": "https://instagram.com/industrialservice",
+      "linkedin": "https://linkedin.com/company/industrialservice",
+      "youtube": ""
+    }
+  },
+  {
+    "id": 4,
+    "title": "Sprzedaż działki budowlanej",
+    "description": "Atrakcyjna działka pod zabudowę",
+    "longDescription": "Oferujemy sprzedaż atrakcyjnych działek budowlanych w najlepszych lokalizacjach. Wszystkie działki posiadają pełne uzbrojenie i pozwolenia na budowę. Pomagamy również w procesie projektowania i budowy.",
+    "price": 200,
+    "rating": 4.2,
+    "category": "Nieruchomości gruntowe",
+    "subcategory": "Gruntowe",
+    "companyName": "GruntoMax",
+    "location": "Warszawa",
+    "phone": "+48 456 789 012",
+    "email": "sprzedaz@gruntomax.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": ["../assets/person4.png", "../assets/person3.png"],
+    "tags": ["Lakier"],
+    "experience": "8 lat na rynku nieruchomości gruntowych. Sprzedaliśmy ponad 500 działek budowlanych. Oferujemy kompleksową obsługę od wyboru działki po oddanie domu do użytkowania.",
+    "socialMedia": {
+      "facebook": "https://facebook.com/gruntomax",
+      "instagram": "https://instagram.com/gruntomax",
+      "linkedin": "",
+      "youtube": "https://youtube.com/gruntomax"
+    }
+  },
+  {
+    "id": 5,
+    "title": "Mycie okien",
+    "description": "Profesjonalne mycie okien w budynkach",
+    "longDescription": "Świadczymy usługi profesjonalnego mycia okien w budynkach mieszkalnych, biurowych i przemysłowych. Używamy specjalistycznego sprzętu umożliwiającego mycie okien na każdej wysokości.",
+    "price": 120,
+    "rating": 4.7,
+    "category": "Usługi porządkowe",
+    "subcategory": "Porządkowe",
+    "companyName": "Czyste Okna",
+    "location": "Warszawa",
+    "phone": "+48 567 890 123",
+    "email": "info@czysteokna.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": [
+      "../assets/person1.png",
+      "../assets/person2.png",
+      "../assets/person3.png",
+      "../assets/person4.png"
+    ],
+    "tags": ["Klimatyzacja", "Lakier"],
+    "experience": "12 lat doświadczenia w myciu okien. Obsługujemy zarówno klientów indywidualnych, jak i firmy. Posiadamy ubezpieczenie OC oraz sprzęt alpinistyczny do pracy na wysokościach.",
+    "socialMedia": {
+      "facebook": "",
+      "instagram": "",
+      "linkedin": "https://linkedin.com/company/czysteokna",
+      "youtube": ""
+    }
+  },
+  {
+    "id": 6,
+    "title": "Administrowanie wspólnotą",
+    "description": "Zarządzanie wspólnotą mieszkaniową",
+    "longDescription": "Oferujemy profesjonalne usługi administrowania wspólnotami mieszkaniowymi. Zajmujemy się zarządzaniem finansami, organizacją zebrań, nadzorem nad remontami oraz bieżącą obsługą mieszkańców.",
+    "price": 350,
+    "rating": 4.6,
+    "category": "Zarządzanie nieruchomościami mieszkalnymi",
+    "subcategory": "Mieszkalnictwo",
+    "companyName": "Admin Plus",
+    "location": "Warszawa",
+    "phone": "+48 678 901 234",
+    "email": "administracja@adminplus.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": ["../assets/person2.png", "../assets/person4.png"],
+    "tags": ["Wulkanizacja", "Mechanika", "Lakier"],
+    "experience": "18 lat w branży zarządzania nieruchomościami. Administrujemy ponad 150 wspólnotami mieszkaniowymi. Nasz zespół to doświadczeni prawnicy, księgowi i specjaliści techniczni.",
+    "socialMedia": {
+      "facebook": "https://facebook.com/adminplus",
+      "instagram": "https://instagram.com/adminplus",
+      "linkedin": "https://linkedin.com/company/adminplus",
+      "youtube": "https://youtube.com/adminplus"
+    }
+  },
+  {
+    "id": 7,
+    "title": "Serwis maszyn przemysłowych",
+    "description": "Konserwacja urządzeń fabrycznych",
+    "longDescription": "Specjalizujemy się w serwisie i konserwacji maszyn przemysłowych. Oferujemy naprawy, przeglądy okresowe, modernizację oraz całodobowy serwis awaryjny dla przemysłu.",
+    "price": 400,
+    "rating": 4.8,
+    "category": "Nieruchomości przemysłowe",
+    "subcategory": "Przemysłowe",
+    "companyName": "TechSerwis",
+    "location": "Warszawa",
+    "phone": "+48 789 012 345",
+    "email": "serwis@techserwis.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": ["../assets/person3.png", "../assets/person1.png"],
+    "tags": ["Mechanika", "Klimatyzacja"],
+    "experience": "25 lat doświadczenia w serwisie maszyn przemysłowych. Obsługujemy zakłady w całej Polsce. Posiadamy autoryzacje największych producentów maszyn przemysłowych.",
+    "socialMedia": {
+      "facebook": "",
+      "instagram": "",
+      "linkedin": "",
+      "youtube": "https://youtube.com/techserwis"
+    }
+  },
+  {
+    "id": 8,
+    "title": "Wycena nieruchomości",
+    "description": "Profesjonalna wycena gruntów",
+    "longDescription": "Świadczymy usługi profesjonalnej wyceny nieruchomości gruntowych. Nasze wyceny są uznawane przez banki i sądy. Posiadamy uprawnienia rzeczoznawcy majątkowego.",
+    "price": 180,
+    "rating": 4.4,
+    "category": "Nieruchomości gruntowe",
+    "subcategory": "Gruntowe",
+    "companyName": "Wycena Expert",
+    "location": "Warszawa",
+    "phone": "+48 890 123 456",
+    "email": "wycena@expert.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": [
+      "../assets/person4.png",
+      "../assets/person2.png",
+      "../assets/person1.png"
+    ],
+    "tags": ["Wulkanizacja", "Lakier"],
+    "experience": "14 lat jako rzeczoznawca majątkowy. Wykonałem ponad 2000 wycen nieruchomości. Współpracuję z największymi bankami i kancelariami prawniczymi w Polsce.",
+    "socialMedia": {
+      "facebook": "https://facebook.com/wycenaexpert",
+      "instagram": "",
+      "linkedin": "https://linkedin.com/in/wycenaexpert",
+      "youtube": ""
+    }
+  },
+  {
+    "id": 9,
+    "title": "Sprzątanie po remoncie",
+    "description": "Usuwanie pozostałości po pracach budowlanych",
+    "longDescription": "Specjalizujemy się w sprzątaniu po remontach i pracach budowlanych. Usuwamy gruz, kurz budowlany, pozostałości po malowaniu i wszystkie inne zanieczyszczenia powstałe podczas remontu.",
+    "price": 200,
+    "rating": 4.3,
+    "category": "Usługi porządkowe",
+    "subcategory": "Porządkowe",
+    "companyName": "Remont Clean",
+    "location": "Warszawa",
+    "phone": "+48 901 234 567",
+    "email": "kontakt@remontclean.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": [
+      "../assets/person1.png",
+      "../assets/person3.png",
+      "../assets/person4.png"
+    ],
+    "tags": ["Klimatyzacja", "Mechanika"],
+    "experience": "7 lat specjalizacji w sprzątaniu po remontach. Obsługujemy zarówno klientów indywidualnych, jak i firmy budowlane. Posiadamy specjalistyczny sprzęt do usuwania kurzu budowlanego.",
+    "socialMedia": {
+      "facebook": "https://facebook.com/remontclean",
+      "instagram": "https://instagram.com/remontclean",
+      "linkedin": "",
+      "youtube": ""
+    }
+  },
+  {
+    "id": 10,
+    "title": "Zarządzanie osiedlem",
+    "description": "Kompleksowa obsługa dużych osiedli",
+    "longDescription": "Oferujemy kompleksowe zarządzanie dużymi osiedlami mieszkaniowymi. Nasze usługi obejmują administrację, obsługę techniczną, zarządzanie finansami oraz koordynację wszystkich prac związanych z utrzymaniem osiedla.",
+    "price": 380,
+    "rating": 4.7,
+    "category": "Zarządzanie nieruchomościami mieszkalnymi",
+    "subcategory": "Mieszkalnictwo",
+    "companyName": "Osiedle Manager",
+    "location": "Warszawa",
+    "phone": "+48 012 345 678",
+    "email": "zarzad@osiedlemanager.pl",
+    "avatar": "../assets/Avatar.png",
+    "images": ["../assets/person2.png", "../assets/person3.png"],
+    "tags": ["Wulkanizacja", "Klimatyzacja", "Mechanika", "Lakier"],
+    "experience": "22 lata doświadczenia w zarządzaniu wielkimi osiedlami mieszkaniowymi. Obsługujemy osiedla liczące ponad 1000 mieszkań. Nasz zespół składa się z 50 specjalistów różnych branż.",
+    "socialMedia": {
+      "facebook": "https://facebook.com/osiedlemanager",
+      "instagram": "https://instagram.com/osiedlemanager",
+      "linkedin": "https://linkedin.com/company/osiedlemanager",
+      "youtube": "https://youtube.com/osiedlemanager"
+    }
+  }
+]

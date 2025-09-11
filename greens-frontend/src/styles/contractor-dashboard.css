@@ -1,0 +1,243 @@
+.contractor-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  position: relative;
+}
+
+.contractor-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Sidebar */
+.contractor-sidebar {
+  width: 280px;
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  transition: transform 0.3s ease-in-out; /* ZMIANA: Płynne wysuwanie */
+}
+
+.contractor-header {
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.contractor-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contractor-logo h1 {
+  color: #4caf50;
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.contractor-logo-dot {
+  width: 8px;
+  height: 8px;
+  background: #ff9800;
+  border-radius: 50%;
+}
+
+.contractor-profile-section {
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: center;
+}
+
+.contractor-profile-avatar {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.contractor-profile-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.contractor-status-badge {
+  position: absolute;
+  bottom: -5px;
+  right: -5px;
+  background: #ff9800;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.contractor-profile-info {
+  text-align: center;
+}
+
+.contractor-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.contractor-location {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 8px 0;
+}
+
+.contractor-rating {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+
+.star {
+  font-size: 14px;
+  color: #ddd;
+}
+
+.star.filled,
+.star.half {
+  color: #ffd700;
+}
+
+.contractor-nav {
+  flex: 1;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.contractor-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  color: #666;
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.contractor-nav-item:hover {
+  background: #f8f9fa;
+  color: #333;
+}
+
+.contractor-nav-item.active {
+  background: #f97316;
+  color: white;
+  font-weight: 500;
+}
+
+.contractor-nav-item.logout {
+  margin-top: auto;
+  border-top: 1px solid #e0e0e0;
+  color: #f44336;
+}
+
+.contractor-nav-item.logout:hover {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.nav-icon {
+  font-size: 16px;
+  min-width: 20px;
+}
+
+.contractor-main {
+  flex: 1;
+  margin-left: 280px;
+  padding: 20px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.mobile-menu-toggle {
+  display: none;
+}
+
+.overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .contractor-sidebar {
+    transform: translateX(-100%);
+    z-index: 2000;
+    width: 50vw;
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .contractor-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .contractor-main {
+    margin-left: 0;
+    padding: 15px;
+    padding-top: 80px;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 10%;
+    left: 0;
+    background-color: #f97316;
+    color: white;
+    border: none;
+    width: 48px;
+    height: 78px;
+    border-radius: 0 50% 50% 0;
+    cursor: pointer;
+    z-index: 3000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .mobile-menu-toggle.open {
+    transform: translateX(50vw);
+  }
+
+  .overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1500;
+  }
+
+  .contractor-stats,
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}

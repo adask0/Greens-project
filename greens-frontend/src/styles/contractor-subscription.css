@@ -1,0 +1,498 @@
+/* Contractor Subscription Styles */
+
+.contractor-subscription {
+  max-width: 1200px;
+}
+
+.contractor-subscription-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  font-size: 1.1rem;
+  color: #666;
+}
+
+/* Header */
+.contractor-subscription-header {
+  margin-bottom: 30px;
+}
+
+.contractor-subscription-header h2 {
+  color: #333;
+  margin: 0 0 4px 0;
+  font-size: 24px;
+}
+
+.contractor-subscription-header p {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Message */
+.contractor-message {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.contractor-message.success {
+  background: #e8f5e8;
+  color: #45964d;
+  border: 1px solid #c8e6c9;
+}
+
+.contractor-message.error {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+/* Current Subscription */
+.contractor-current-subscription {
+  margin-bottom: 40px;
+}
+
+.contractor-current-subscription h3 {
+  color: #333;
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+.contractor-current-plan-card {
+  background: white;
+  border: 2px solid #4caf50;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.contractor-plan-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contractor-plan-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: #4caf50;
+}
+
+.contractor-plan-status,
+.contractor-plan-expires {
+  font-size: 14px;
+  color: #666;
+}
+
+.status-active {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.contractor-btn-upgrade {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.contractor-btn-upgrade:hover {
+  background: #f57c00;
+}
+
+/* Available Plans */
+.contractor-available-plans {
+  margin-bottom: 40px;
+}
+
+.contractor-available-plans h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.contractor-plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.contractor-plan-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.contractor-plan-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.contractor-plan-card.popular {
+  border-color: #4caf50;
+  transform: scale(1.05);
+}
+
+.contractor-plan-card.current {
+  border-color: #ff9800;
+  background: #fff8e1;
+}
+
+.contractor-plan-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #4caf50;
+  color: white;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: bold;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 20% 100%);
+}
+
+.contractor-plan-header {
+  background: #f8f9fa;
+  padding: 24px;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.contractor-plan-header h4 {
+  color: #333;
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.contractor-plan-price {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.contractor-plan-price .price {
+  font-size: 32px;
+  font-weight: bold;
+  color: #f97316;
+}
+
+.contractor-plan-price .duration {
+  font-size: 14px;
+  color: #666;
+}
+
+.contractor-plan-features {
+  padding: 24px;
+  flex: 1;
+}
+
+.contractor-plan-features h5 {
+  color: #333;
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.contractor-plan-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+.contractor-plan-features li {
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.contractor-plan-features .feature {
+  color: #4caf50;
+}
+
+.contractor-plan-features .limitation {
+  color: #f44336;
+}
+
+.contractor-plan-action {
+  padding: 20px 24px;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.contractor-btn-select {
+  width: 100%;
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.contractor-btn-select:hover {
+  background: #45a049;
+}
+
+.contractor-btn-current {
+  width: 100%;
+  background: #e0e0e0;
+  color: #666;
+  border: none;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: not-allowed;
+}
+
+.contractor-payment-history h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.contractor-payments-table {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.contractor-table-header {
+  background: #f8f9fa;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.contractor-table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  font-size: 14px;
+  color: #666;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.contractor-table-row:last-child {
+  border-bottom: none;
+}
+
+.contractor-table-row:hover {
+  background: #f8f9fa;
+}
+
+.contractor-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.contractor-status.success {
+  background: #e8f5e8;
+  color: #45964d;
+}
+
+.contractor-status.warning {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.contractor-status.error {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.contractor-table-empty {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Modal */
+.contractor-subscription-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.contractor-modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.contractor-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.contractor-modal-header h3 {
+  color: #333;
+  margin: 0;
+  font-size: 18px;
+}
+
+.contractor-btn-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.contractor-btn-close:hover {
+  background: #f5f5f5;
+}
+
+.contractor-modal-body {
+  padding: 24px;
+}
+
+.contractor-selected-plan {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 16px;
+  text-align: center;
+  margin: 16px 0;
+}
+
+.contractor-selected-plan h4 {
+  color: #333;
+  margin: 0 0 8px 0;
+  font-size: 18px;
+}
+
+.contractor-upgrade-info {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.contractor-upgrade-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #1976d2;
+}
+
+.contractor-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 20px 24px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.contractor-btn-cancel {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.contractor-btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.contractor-btn-confirm {
+  background: #45964d;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.contractor-btn-confirm:hover {
+  background: #45a049;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contractor-plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contractor-current-plan-card {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+
+  .contractor-table-header,
+  .contractor-table-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .contractor-table-header {
+    display: none;
+  }
+
+  .contractor-table-row {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .contractor-table-row > div:before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+    display: inline-block;
+    width: 80px;
+  }
+}

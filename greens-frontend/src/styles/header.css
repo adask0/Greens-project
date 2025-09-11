@@ -1,0 +1,430 @@
+/* Header Component Styles */
+.header-container {
+    background-color: #45964d;
+    color: white;
+    font-family: var(--font-primary);
+    font-size: 1.1rem;
+    font-weight: 500;
+    position: relative;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    position: relative;
+}
+
+/* Logo */
+.header-logo {
+    flex: 1;
+}
+
+.header-logo-mobile {
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.header-logo img {
+    height: 40px;
+}
+
+.header-logo-mobile img {
+    height: 35px;
+}
+
+.header-logo a,
+.header-logo-mobile a {
+    text-decoration: none;
+}
+
+/* Navigation */
+.header-nav {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-nav-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: nowrap;
+}
+
+.header-nav-item {
+    position: relative;
+}
+
+.header-nav-item.active::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #f97316;
+}
+
+.header-nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 0.5rem 0;
+    display: block;
+    white-space: nowrap;
+}
+
+.header-nav-link.active {
+    font-weight: 700;
+}
+
+.header-right {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-left: 5px;
+}
+
+.header-user-menu {
+    display: flex;
+    flex-direction: row;
+}
+
+.header-cart-link {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    text-decoration: none;
+}
+
+.header-auth-btn {
+    background-color: #f97316;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 5px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-decoration: none;
+    align-content: center;
+}
+
+.header-auth-btn.login {
+    font-weight: 700;
+}
+
+/* Mobile Hamburger Button */
+.header-mobile-buttons {
+    display: flex;
+    align-items: center;
+    padding-right: 1rem;
+}
+
+.header-mobile-hamburger {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.hamburger-line {
+    width: 24px;
+    height: 2px;
+    background-color: white;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+.hamburger-line.open:nth-child(1) {
+    transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger-line.open:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-line.open:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Mobile Dropdown Menu */
+.header-mobile-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background-color: #45964d;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    z-index: 999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.header-mobile-dropdown.open {
+    max-height: 100vh;
+}
+
+.header-mobile-dropdown-content {
+    padding: 1rem 0;
+}
+
+/* Mobile Navigation Links */
+.header-mobile-nav {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.header-mobile-nav-link {
+    display: block;
+    padding: 1rem 2rem;
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.header-mobile-nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding-left: 2.5rem;
+}
+
+.header-mobile-nav-link.active {
+    font-weight: 700;
+    background-color: rgba(249, 115, 22, 0.2);
+}
+
+.header-mobile-nav-link.active::before {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #f97316;
+}
+
+/* Mobile Auth Section */
+.header-mobile-auth {
+    padding: 0 2rem 1rem 2rem;
+}
+
+.header-mobile-user-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.header-mobile-panel-btn {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+
+.header-mobile-panel-btn.contractor {
+    background-color: #f97316;
+    color: white;
+}
+
+.header-mobile-panel-btn.contractor:hover {
+    background-color: #45a049;
+    transform: translateY(-1px);
+}
+
+.header-mobile-panel-btn.admin {
+    background-color: #f97316;
+    color: white;
+}
+
+.header-mobile-panel-btn.admin:hover {
+    background-color: #f97316;
+    transform: translateY(-1px);
+}
+
+.header-mobile-logout-btn {
+    background-color: #f97316;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    margin-top: 0.5rem;
+}
+
+.header-mobile-logout-btn:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+}
+
+.header-mobile-login-btn {
+    background-color: #f97316;
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.header-mobile-login-btn:hover {
+    background-color: #ea580c;
+    transform: translateY(-1px);
+}
+
+/* Mobile Overlay */
+.header-mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 768px) {
+    .header-content {
+        padding: 1rem 0;
+    }
+
+    .header-nav,
+    .header-right {
+        display: none;
+    }
+
+    /* Zapobieganie scrollowaniu gdy menu jest otwarte */
+    body.menu-open {
+        overflow: hidden;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .header-nav-links {
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
+    .header-nav-link {
+        font-size: 0.5rem;
+        letter-spacing: 0.05px;
+    }
+
+    .header-auth-btn {
+        font-size: 0.6rem;
+    }
+}
+
+@media (min-width: 1025px) and (max-width: 1450px) {
+    .header-nav-links {
+        gap: 0.7rem;
+    }
+
+    .header-nav-link {
+        font-size: 0.52rem;
+        letter-spacing: 0.15px;
+    }
+
+    .header-auth-btn {
+        font-size: 0.55rem;
+    }
+}
+
+.admin-link {
+    margin-left: 1rem;
+}
+
+.contractor-link {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-transform: uppercase;
+    text-decoration: none;
+    align-content: center;
+    margin-right: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.contractor-link:hover {
+    background-color: #45a049;
+}
+
+/* Responsive adjustments for contractor panel */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .contractor-link {
+        font-size: 0.7rem;
+        padding: 0.4rem 1rem;
+    }
+}
+
+@media (min-width: 1025px) and (max-width: 1450px) {
+    .contractor-link {
+        font-size: 0.75rem;
+        padding: 0.45rem 1.1rem;
+    }
+}
+
+/* Dodatkowe style dla płynnych animacji */
+@media (prefers-reduced-motion: no-preference) {
+    .header-mobile-dropdown {
+        transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .header-mobile-nav-link,
+    .header-mobile-panel-btn,
+    .header-mobile-logout-btn,
+    .header-mobile-login-btn {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
