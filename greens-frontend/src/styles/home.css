@@ -565,10 +565,12 @@ input {
   text-transform: uppercase;
 }
 
-/* Mobile Responsive */
 @media (max-width: 768px) {
   .home-hero {
     padding: 2rem 1.5rem;
+  }
+  .home-service-card {
+    height: 200px;
   }
 
   .home-hero-content {
@@ -687,4 +689,8 @@ input {
     rows: 6;
     background-color: #faf7ee;
   }
+}
+
+.search-listing-info {
+  text-align: left;
 }

@@ -17,7 +17,8 @@ import Register from "./pages/Register";
 import AdminList from "./admin/AdminList";
 import ContractorDashboard from "./contractor/ContractorDashboard";
 import ResetPassword from "./pages/ResetPassword";
-
+import CookiePolicy from "./pages/CookiePolicy";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -92,6 +93,22 @@ const AppContent = () => {
           }
         />
         <Route
+          path="/polityka-cookies"
+          element={
+            <Layout>
+              <CookiePolicy />
+            </Layout>
+          }
+        />
+        <Route
+          path="/polityka-prywatnosci"
+          element={
+            <Layout>
+              <PrivacyPolicy />
+            </Layout>
+          }
+        />
+        <Route
           path="/ogloszenie/:id"
           element={
             <Layout>
@@ -124,12 +141,12 @@ const AppContent = () => {
           }
         />
         <Route
-        path="/reset-password"
-        element={
+          path="/reset-password"
+          element={
             <PublicRoute>
-            <ResetPassword />
+              <ResetPassword />
             </PublicRoute>
-        }
+          }
         />
         <Route
           path="/register"

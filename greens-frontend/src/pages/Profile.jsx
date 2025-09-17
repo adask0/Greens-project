@@ -5,7 +5,6 @@ import "../styles/profile.css";
 import api from "../services/api";
 import CommentsSection from "./CommentsSection";
 
-// Import tylko fallback assets dla avatara i ikon social media
 import Avatar from "../assets/Avatar.png";
 import facebookIcon from "../assets/facebook.svg";
 import instagramIcon from "../assets/instagram.svg";
@@ -26,7 +25,6 @@ const Profile = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
 
-  // Mapa ikon social media
   const iconMap = {
     facebook: facebookIcon,
     instagram: instagramIcon,
@@ -49,17 +47,17 @@ const Profile = () => {
     if (!user || !listing) return;
 
     try {
-      const response = await api.get('/user/favorites');
+      const response = await api.get("/user/favorites");
       const favorites = response.data.favorites || [];
       setIsFavorite(favorites.includes(parseInt(id)));
     } catch (error) {
-      console.error('Error checking favorites:', error);
+      console.error("Error checking favorites:", error);
     }
   };
 
   const toggleFavorite = async () => {
     if (!user) {
-      alert('Musisz być zalogowany, aby dodać do ulubionych');
+      alert("Musisz być zalogowany, aby dodać do ulubionych");
       return;
     }
 
@@ -70,15 +68,14 @@ const Profile = () => {
 
       // Pokaż komunikat
       const message = response.data.is_favorited
-        ? 'Dodano do ulubionych!'
-        : 'Usunięto z ulubionych!';
+        ? "Dodano do ulubionych!"
+        : "Usunięto z ulubionych!";
 
       // Możesz dodać toast notification tutaj
       console.log(message);
-
     } catch (error) {
-      console.error('Error toggling favorite:', error);
-      alert('Wystąpił błąd. Spróbuj ponownie.');
+      console.error("Error toggling favorite:", error);
+      alert("Wystąpił błąd. Spróbuj ponownie.");
     } finally {
       setFavoriteLoading(false);
     }
@@ -104,26 +101,26 @@ const Profile = () => {
           console.log("Raw images from DB:", listingData.images);
 
           // Jeśli images to string JSON, sparsuj go
-          if (typeof listingData.images === 'string') {
+          if (typeof listingData.images === "string") {
             const parsedImages = JSON.parse(listingData.images);
             console.log("Parsed images array:", parsedImages);
 
             // Konwertuj nazwy plików na pełne URL-e
-            images = parsedImages.map(filename => {
+            images = parsedImages.map((filename) => {
               // Usuń slashe z początku jeśli są
-              const cleanFilename = filename.replace(/^\/+/, '');
+              const cleanFilename = filename.replace(/^\/+/, "");
               return `http://localhost:8000/storage/listings/${cleanFilename}`;
             });
           } else if (Array.isArray(listingData.images)) {
             // Jeśli już jest tablicą
-            images = listingData.images.map(img => {
-              if (img.startsWith('http')) {
+            images = listingData.images.map((img) => {
+              if (img.startsWith("http")) {
                 return img;
               }
-              if (img.startsWith('/storage')) {
+              if (img.startsWith("/storage")) {
                 return `http://localhost:8000${img}`;
               }
-              const cleanFilename = img.replace(/^\/+/, '');
+              const cleanFilename = img.replace(/^\/+/, "");
               return `http://localhost:8000/storage/listings/${cleanFilename}`;
             });
           }
@@ -283,7 +280,7 @@ const Profile = () => {
   const handleImageError = (e) => {
     console.error("Error loading image:", e.target.src);
     // Ukryj obrazek, który się nie załadował
-    e.target.style.display = 'none';
+    e.target.style.display = "none";
   };
 
   if (loading) {
@@ -349,25 +346,27 @@ const Profile = () => {
           <h1 className="profile-category">Kategoria: {listing.category}</h1>
           <div className="profile-price">{listing.price}zł</div>
 
-{user && (
-  <button
-    className={`profile-favorite-btn ${isFavorite ? 'active' : ''} ${favoriteLoading ? 'adding' : ''}`}
-    onClick={toggleFavorite}
-    disabled={favoriteLoading}
-  >
-    <svg
-      className="favorite-icon"
-      width="30"
-      height="30"
-      viewBox="0 0 24 24"
-      fill={isFavorite ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z"/>
-    </svg>
-  </button>
-)}
+          {user && (
+            <button
+              className={`profile-favorite-btn ${isFavorite ? "active" : ""} ${
+                favoriteLoading ? "adding" : ""
+              }`}
+              onClick={toggleFavorite}
+              disabled={favoriteLoading}
+            >
+              <svg
+                className="favorite-icon"
+                width="30"
+                height="30"
+                viewBox="0 0 24 24"
+                fill={isFavorite ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <div className="profile-content">
@@ -379,10 +378,17 @@ const Profile = () => {
 
               <div className="profile-avatar-container">
                 <img
-                  src={listing.avatar.startsWith('http') || listing.avatar.startsWith('/') ? listing.avatar : Avatar}
+                  src={
+                    listing.avatar.startsWith("http") ||
+                    listing.avatar.startsWith("/")
+                      ? listing.avatar
+                      : Avatar
+                  }
                   alt={listing.companyName}
                   className="profile-avatar"
-                  onError={(e) => { e.target.src = Avatar; }}
+                  onError={(e) => {
+                    e.target.src = Avatar;
+                  }}
                 />
               </div>
 
@@ -434,12 +440,14 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Galeria zdjęć - wyświetla się tylko gdy są zdjęcia z bazy danych */}
             {listing.images && listing.images.length > 0 && (
               <div className="profile-gallery">
                 <div className="profile-gallery-main">
                   {listing.images.length > 1 && (
-                    <button className="gallery-nav-btn prev" onClick={prevImage}>
+                    <button
+                      className="gallery-nav-btn prev"
+                      onClick={prevImage}
+                    >
                       <svg
                         width="24"
                         height="24"
@@ -463,7 +471,10 @@ const Profile = () => {
                   />
 
                   {listing.images.length > 1 && (
-                    <button className="gallery-nav-btn next" onClick={nextImage}>
+                    <button
+                      className="gallery-nav-btn next"
+                      onClick={nextImage}
+                    >
                       <svg
                         width="24"
                         height="24"
@@ -478,7 +489,6 @@ const Profile = () => {
                   )}
                 </div>
 
-                {/* Miniatury - wyświetlają się tylko gdy jest więcej niż 1 zdjęcie */}
                 {listing.images.length > 1 && (
                   <div className="profile-gallery-thumbnails">
                     {listing.images.map((image, index) => (
@@ -498,7 +508,6 @@ const Profile = () => {
               </div>
             )}
 
-            {/* Wyświetl komunikat gdy nie ma zdjęć */}
             {(!listing.images || listing.images.length === 0) && (
               <div className="no-images-message">
                 <p>Brak zdjęć do wyświetlenia</p>

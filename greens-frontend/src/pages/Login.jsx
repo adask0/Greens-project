@@ -380,7 +380,7 @@ const Login = () => {
                   pointerEvents: loading ? "none" : "auto",
                 }}
               >
-                Zarejestruj Firmę
+                Zarejestruj się jako Ogłoszeniodawca
               </a>
             </div>
           </form>

@@ -10,6 +10,8 @@ import CompanyList from "./CompanyList";
 import AnnouncementsList from "./AnnouncementsList";
 import MessagesList from "./MessagesList";
 import SubscriptionsList from "./SubscriptionsList";
+import CategoryList from "./CategoryList";
+// import CookieManagement from "./CookieManagement";
 import { useAuth } from "../contexts/AuthContext";
 
 const AdminPanel = () => {
@@ -62,6 +64,12 @@ const AdminPanel = () => {
       component: AnnouncementsList,
     },
     {
+      id: "categories",
+      name: "Kategorie",
+      icon: ListIcon,
+      component: CategoryList,
+    },
+    {
       id: "messages",
       name: "Wiadomości",
       icon: ArrowIcon,
@@ -73,6 +81,12 @@ const AdminPanel = () => {
       icon: RatingIcon,
       component: SubscriptionsList,
     },
+    // {
+    //   id: "cookies",
+    //   name: "Cookies",
+    //   icon: ListIcon,
+    //   component: CookieManagement,
+    // },
   ];
 
   const activeComponent =

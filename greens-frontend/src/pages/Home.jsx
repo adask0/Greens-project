@@ -4,7 +4,6 @@ import ReCAPTCHA from "react-google-recaptcha";
 import api from "../services/api";
 import "../styles/home.css";
 
-// Import ikon/obrazków
 import Icon1 from "../assets/1.png";
 import Icon2 from "../assets/1(1).png";
 import Icon3 from "../assets/1(2).png";
@@ -25,16 +24,15 @@ const Home = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isConsentChecked, setIsConsentChecked] = useState(false);
 
-  // Stany dla formularza kontaktowego
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    message: ''
+    name: "",
+    phone: "",
+    email: "",
+    message: "",
   });
   const [captchaValue, setCaptchaValue] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
+  const [submitMessage, setSubmitMessage] = useState("");
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -140,9 +138,9 @@ const Home = () => {
   // Obsługa zmian w formularzu
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -157,41 +155,43 @@ const Home = () => {
 
     // Walidacja
     if (!formData.name || !formData.email || !formData.message) {
-      setSubmitMessage('Proszę wypełnić wszystkie wymagane pola.');
+      setSubmitMessage("Proszę wypełnić wszystkie wymagane pola.");
       return;
     }
 
     if (!isConsentChecked) {
-      setSubmitMessage('Proszę wyrazić zgodę na przetwarzanie danych osobowych.');
+      setSubmitMessage(
+        "Proszę wyrazić zgodę na przetwarzanie danych osobowych."
+      );
       return;
     }
 
     if (!captchaValue) {
-      setSubmitMessage('Proszę potwierdzić captchę.');
+      setSubmitMessage("Proszę potwierdzić captchę.");
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitMessage('');
+    setSubmitMessage("");
 
     try {
       // Wysyłanie maila przez Laravel API
-      const response = await api.post('/contact', {
+      const response = await api.post("/contact", {
         name: formData.name,
         phone: formData.phone,
         email: formData.email,
         message: formData.message,
-        'g-recaptcha-response': captchaValue
+        "g-recaptcha-response": captchaValue,
       });
 
       if (response.status === 200 || response.status === 201) {
-        setSubmitMessage('Wiadomość została wysłana pomyślnie!');
+        setSubmitMessage("Wiadomość została wysłana pomyślnie!");
         // Resetowanie formularza
         setFormData({
-          name: '',
-          phone: '',
-          email: '',
-          message: ''
+          name: "",
+          phone: "",
+          email: "",
+          message: "",
         });
         setIsConsentChecked(false);
         setCaptchaValue(null);
@@ -201,10 +201,11 @@ const Home = () => {
         }
       }
     } catch (error) {
-      console.error('Błąd przy wysyłaniu wiadomości:', error);
-      const errorMessage = error.response?.data?.message ||
-                          error.response?.data?.error ||
-                          'Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.';
+      console.error("Błąd przy wysyłaniu wiadomości:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Wystąpił błąd podczas wysyłania wiadomości. Spróbuj ponownie.";
       setSubmitMessage(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -470,7 +471,10 @@ const Home = () => {
 
           <div className="home-contact-form-captcha">
             <ReCAPTCHA
-              sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"}
+              sitekey={
+                process.env.REACT_APP_RECAPTCHA_SITE_KEY ||
+                "6Le_YcorAAAAAHJZWn-eY68ph6D0tpZ96zYuhytX"
+              }
               onChange={handleCaptchaChange}
             />
           </div>
@@ -516,14 +520,18 @@ const Home = () => {
           </label>
 
           {submitMessage && (
-            <div className={`home-contact-form-message ${submitMessage.includes('pomyślnie') ? 'success' : 'error'}`}>
+            <div
+              className={`home-contact-form-message ${
+                submitMessage.includes("pomyślnie") ? "success" : "error"
+              }`}
+            >
               {submitMessage}
             </div>
           )}
 
           <div className="home-contact-form-submit">
             <button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Wysyłanie...' : 'Wyślij'}
+              {isSubmitting ? "Wysyłanie..." : "Wyślij"}
             </button>
           </div>
         </form>
