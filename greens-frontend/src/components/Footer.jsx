@@ -101,7 +101,7 @@ const Footer = () => {
       <div className="bottom-footer">
         <strong>© 2025 Greens sp. z o.o.</strong>
         <p>
-          tel: <strong>123 456 789</strong>
+          tel: <strong>798 408 333</strong>
         </p>
       </div>
     </div>

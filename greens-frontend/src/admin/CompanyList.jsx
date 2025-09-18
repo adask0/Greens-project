@@ -11,6 +11,8 @@ const CompanyList = () => {
   const [sortBy, setSortBy] = useState("created_at");
   const [filterStatus, setFilterStatus] = useState("");
   const [changedCompanies, setChangedCompanies] = useState(new Set());
+  const [selectedCompanies, setSelectedCompanies] = useState(new Set());
+  const [deletingCompanies, setDeletingCompanies] = useState(new Set());
 
   useEffect(() => {
     fetchCompanies();
@@ -27,6 +29,7 @@ const CompanyList = () => {
       const companiesData = response.data.data || [];
       setCompanies(companiesData);
       setChangedCompanies(new Set());
+      setSelectedCompanies(new Set());
     } catch (err) {
       setError("Błąd podczas pobierania firm");
       console.error("Błąd:", err);
@@ -43,6 +46,114 @@ const CompanyList = () => {
     );
 
     setChangedCompanies((prev) => new Set([...prev, id]));
+  };
+
+  const handleSelectCompany = (id) => {
+    setSelectedCompanies((prev) => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(id)) {
+        newSelected.delete(id);
+      } else {
+        newSelected.add(id);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = () => {
+    const filteredIds = getFilteredCompanies().map(c => c.id);
+    if (selectedCompanies.size === filteredIds.length) {
+      setSelectedCompanies(new Set());
+    } else {
+      setSelectedCompanies(new Set(filteredIds));
+    }
+  };
+
+  const deleteCompany = async (id) => {
+    const company = companies.find(c => c.id === id);
+    if (!window.confirm(`Czy na pewno chcesz usunąć firmę "${company?.name}"?`)) {
+      return;
+    }
+
+    try {
+      setDeletingCompanies(prev => new Set([...prev, id]));
+      await api.delete(`/companies/${id}`);
+
+      setCompanies(prev => prev.filter(c => c.id !== id));
+      setSelectedCompanies(prev => {
+        const newSelected = new Set(prev);
+        newSelected.delete(id);
+        return newSelected;
+      });
+      setChangedCompanies(prev => {
+        const newChanged = new Set(prev);
+        newChanged.delete(id);
+        return newChanged;
+      });
+
+      setSuccess(`Firma "${company?.name}" została usunięta`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      setError(`Błąd podczas usuwania firmy "${company?.name}"`);
+      console.error("Błąd:", err);
+    } finally {
+      setDeletingCompanies(prev => {
+        const newDeleting = new Set(prev);
+        newDeleting.delete(id);
+        return newDeleting;
+      });
+    }
+  };
+
+  const deleteSelectedCompanies = async () => {
+    if (selectedCompanies.size === 0) return;
+
+    if (!window.confirm(`Czy na pewno chcesz usunąć ${selectedCompanies.size} zaznaczonych firm?`)) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      let deletedCount = 0;
+      let errors = [];
+
+      for (const id of selectedCompanies) {
+        try {
+          await api.delete(`/companies/${id}`);
+          deletedCount++;
+        } catch (err) {
+          const company = companies.find(c => c.id === id);
+          errors.push(company?.name || `ID: ${id}`);
+        }
+      }
+
+      // Usuń firmy z lokalnego stanu
+      setCompanies(prev => prev.filter(c => !selectedCompanies.has(c.id)));
+      setSelectedCompanies(new Set());
+      setChangedCompanies(prev => {
+        const newChanged = new Set(prev);
+        selectedCompanies.forEach(id => newChanged.delete(id));
+        return newChanged;
+      });
+
+      if (errors.length === 0) {
+        setSuccess(`Usunięto ${deletedCount} firm`);
+      } else {
+        setSuccess(`Usunięto ${deletedCount} firm`);
+        setError(`Nie udało się usunąć: ${errors.join(", ")}`);
+      }
+
+      setTimeout(() => {
+        setSuccess(null);
+        setError(null);
+      }, 5000);
+
+    } catch (err) {
+      setError("Błąd podczas masowego usuwania");
+      console.error("Błąd:", err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const saveChanges = async (e) => {
@@ -176,6 +287,16 @@ const CompanyList = () => {
           <button className="refresh-btn" onClick={fetchCompanies}>
             🔄 Odśwież
           </button>
+
+          {selectedCompanies.size > 0 && (
+            <button
+              className="delete-btn bulk-delete-btn"
+              onClick={deleteSelectedCompanies}
+              disabled={saving}
+            >
+              🗑️ Usuń zaznaczone ({selectedCompanies.size})
+            </button>
+          )}
         </div>
 
         <div className="stats">
@@ -183,6 +304,11 @@ const CompanyList = () => {
           {changedCompanies.size > 0 && (
             <span className="changes-indicator">
               | Zmieniono: {changedCompanies.size}
+            </span>
+          )}
+          {selectedCompanies.size > 0 && (
+            <span className="selected-indicator">
+              | Zaznaczono: {selectedCompanies.size}
             </span>
           )}
         </div>
@@ -193,6 +319,14 @@ const CompanyList = () => {
           <table className="data-table">
             <thead>
               <tr>
+                <th>
+                  <input
+                    type="checkbox"
+                    checked={filteredCompanies.length > 0 && selectedCompanies.size === filteredCompanies.length}
+                    onChange={handleSelectAll}
+                    title="Zaznacz wszystkie"
+                  />
+                </th>
                 <th>ID</th>
                 <th>Firma</th>
                 <th>Adres</th>
@@ -201,14 +335,27 @@ const CompanyList = () => {
                 <th>Telefon</th>
                 <th>Sub.</th>
                 <th>NIP</th>
+                <th>Akcje</th>
               </tr>
             </thead>
             <tbody>
               {filteredCompanies.map((company) => (
                 <tr
                   key={company.id}
-                  className={changedCompanies.has(company.id) ? "changed" : ""}
+                  className={`
+                    ${changedCompanies.has(company.id) ? "changed" : ""}
+                    ${selectedCompanies.has(company.id) ? "selected" : ""}
+                    ${deletingCompanies.has(company.id) ? "deleting" : ""}
+                  `.trim()}
                 >
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={selectedCompanies.has(company.id)}
+                      onChange={() => handleSelectCompany(company.id)}
+                      disabled={deletingCompanies.has(company.id)}
+                    />
+                  </td>
                   <td>{company.id}</td>
                   <td>
                     <input
@@ -216,6 +363,7 @@ const CompanyList = () => {
                       onChange={(e) =>
                         handleChange(company.id, "name", e.target.value)
                       }
+                      disabled={deletingCompanies.has(company.id)}
                     />
                   </td>
                   <td>
@@ -224,6 +372,7 @@ const CompanyList = () => {
                       onChange={(e) =>
                         handleChange(company.id, "address", e.target.value)
                       }
+                      disabled={deletingCompanies.has(company.id)}
                     />
                   </td>
                   <td>
@@ -233,6 +382,7 @@ const CompanyList = () => {
                         handleChange(company.id, "status", e.target.value)
                       }
                       className={`status-select status-${company.status}`}
+                      disabled={deletingCompanies.has(company.id)}
                     >
                       <option value="dostępny">dostępny</option>
                       <option value="niedostępny">niedostępny</option>
@@ -246,6 +396,7 @@ const CompanyList = () => {
                         handleChange(company.id, "email", e.target.value)
                       }
                       type="email"
+                      disabled={deletingCompanies.has(company.id)}
                     />
                   </td>
                   <td>
@@ -254,6 +405,7 @@ const CompanyList = () => {
                       onChange={(e) =>
                         handleChange(company.id, "phone", e.target.value)
                       }
+                      disabled={deletingCompanies.has(company.id)}
                     />
                   </td>
                   <td>
@@ -263,6 +415,7 @@ const CompanyList = () => {
                         handleChange(company.id, "subscription", e.target.value)
                       }
                       className="subscription-input"
+                      disabled={deletingCompanies.has(company.id)}
                     />
                   </td>
                   <td>
@@ -271,7 +424,19 @@ const CompanyList = () => {
                       onChange={(e) =>
                         handleChange(company.id, "nip", e.target.value)
                       }
+                      disabled={deletingCompanies.has(company.id)}
                     />
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="delete-btn"
+                      onClick={() => deleteCompany(company.id)}
+                      disabled={deletingCompanies.has(company.id)}
+                      title={`Usuń firmę ${company.name}`}
+                    >
+                      {deletingCompanies.has(company.id) ? "..." : "Usuń"}
+                    </button>
                   </td>
                 </tr>
               ))}

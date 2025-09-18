@@ -79,46 +79,29 @@ const ContractorProfile = () => {
   }, [user]);
 
   const getAvatarUrl = () => {
-    // 1. Priorytet - user z AuthContext (zawsze aktualne)
+    console.log('getAvatarUrl debug:', {
+      user_avatar_url: user?.avatar_url,
+      user_avatar: user?.avatar,
+      profileData_avatar_url: profileData.avatar_url,
+      profileData_avatar: profileData.avatar
+    });
+
+    // 1. Najpierw sprawdź user z AuthContext
     if (user?.avatar_url) {
-      // Backend już zwraca pełny URL
       return user.avatar_url;
     }
 
+    // 2. Jeśli user ma avatar path, zbuduj URL
     if (user?.avatar) {
+      // Jeśli już jest pełnym URL
       if (user.avatar.startsWith('http')) {
         return user.avatar;
       }
-      // Jeśli avatar zaczyna się od "avatars/", użyj bez dodatkowego "avatars/"
-      const avatarPath = user.avatar.startsWith('avatars/')
-        ? user.avatar.replace('avatars/', '')
-        : user.avatar;
-      return `http://127.0.0.1:8000/storage/avatars/${avatarPath}`;
+      // Zbuduj URL z backend URL + storage path
+      return `https://greens.org.pl/backend.greens.org.pl/public/storage/${user.avatar}`;
     }
 
-    // 2. Fallback - localStorage (tylko jako cache)
-    const companyData = localStorage.getItem("company");
-    if (companyData) {
-      try {
-        const company = JSON.parse(companyData);
-        if (company.avatar_url) {
-          return company.avatar_url;
-        }
-        if (company.avatar) {
-          if (company.avatar.startsWith('http')) {
-            return company.avatar;
-          }
-          const avatarPath = company.avatar.startsWith('avatars/')
-            ? company.avatar.replace('avatars/', '')
-            : company.avatar;
-          return `http://127.0.0.1:8000/storage/avatars/${avatarPath}`;
-        }
-      } catch (e) {
-        // ignore parse error
-      }
-    }
-
-    // 3. Fallback - profileData (lokalny stan)
+    // 3. Sprawdź lokalny stan profileData
     if (profileData.avatar_url) {
       return profileData.avatar_url;
     }
@@ -127,13 +110,87 @@ const ContractorProfile = () => {
       if (profileData.avatar.startsWith('http')) {
         return profileData.avatar;
       }
-      const avatarPath = profileData.avatar.startsWith('avatars/')
-        ? profileData.avatar.replace('avatars/', '')
-        : profileData.avatar;
-      return `http://127.0.0.1:8000/storage/avatars/${avatarPath}`;
+      return `https://greens.org.pl/backend.greens.org.pl/public/storage/${profileData.avatar}`;
     }
 
-    return Avatar;
+    // 4. Fallback - zwróć null żeby pokazać ikonę SVG
+    return null;
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Walidacja pliku
+    if (!file.type.startsWith('image/')) {
+      setMessage({
+        type: "error",
+        text: "Proszę wybrać plik obrazu (JPG, PNG, GIF)"
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({
+        type: "error",
+        text: "Plik jest za duży. Maksymalny rozmiar to 5MB"
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      setSaving(true);
+
+      // Użyj bezpośredniego endpointa PHP zamiast Laravel API
+      const token = localStorage.getItem('token');
+      const response = await fetch('https://greens.org.pl/backend.greens.org.pl/public/upload_avatar.php', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const responseData = await response.json();
+      console.log('Avatar upload response:', responseData); // DEBUG
+
+      if (responseData.success) {
+        // Aktualizuj lokalny stan
+        setProfileData(prev => ({
+          ...prev,
+          avatar: responseData.avatar,
+          avatar_url: responseData.avatar_url
+        }));
+
+        // Aktualizuj localStorage jako cache
+        const companyData = JSON.parse(localStorage.getItem("company") || "{}");
+        companyData.avatar = responseData.avatar;
+        companyData.avatar_url = responseData.avatar_url;
+        localStorage.setItem("company", JSON.stringify(companyData));
+
+        setMessage({
+          type: "success",
+          text: "Zdjęcie profilowe zostało zaktualizowane!"
+        });
+      } else {
+        setMessage({
+          type: "error",
+          text: responseData.message || "Nie udało się zaktualizować zdjęcia profilowego"
+        });
+      }
+
+    } catch (error) {
+      console.error("Avatar upload error:", error);
+      setMessage({
+        type: "error",
+        text: "Błąd połączenia z serwerem"
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleInputChange = (field, value) => {
@@ -172,75 +229,6 @@ const ContractorProfile = () => {
       setMessage({
         type: "error",
         text: error.response?.data?.message || "Nie udało się zaktualizować profilu",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleAvatarChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      setMessage({
-        type: "error",
-        text: "Proszę wybrać plik obrazu (JPG, PNG, GIF)"
-      });
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setMessage({
-        type: "error",
-        text: "Plik jest za duży. Maksymalny rozmiar to 5MB"
-      });
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    try {
-      setSaving(true);
-      const response = await api.post("/contractor/profile/avatar", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      const newAvatar = response.data.avatar || response.data.avatar_url;
-
-      // 1. Aktualizuj lokalny stan
-      setProfileData((prev) => ({
-        ...prev,
-        avatar: newAvatar,
-      }));
-
-      // 2. Aktualizuj localStorage jako cache
-      const companyData = JSON.parse(localStorage.getItem("company") || "{}");
-      companyData.avatar = newAvatar;
-      localStorage.setItem("company", JSON.stringify(companyData));
-
-      // 3. WAŻNE: Pobierz zaktualizowane dane użytkownika z serwera
-      // Żeby AuthContext miał aktualne dane
-      try {
-        const profileResponse = await api.get("/contractor/profile");
-        // Tu powinieneś zaktualizować AuthContext - w zależności od implementacji
-        // np. refetch user data lub trigger refresh
-      } catch (error) {
-        console.error("Error refreshing user data:", error);
-      }
-
-      setMessage({
-        type: "success",
-        text: "Zdjęcie profilowe zostało zaktualizowane!",
-      });
-
-    } catch (error) {
-      setMessage({
-        type: "error",
-        text: error.response?.data?.message || "Nie udało się zaktualizować zdjęcia profilowego",
       });
     } finally {
       setSaving(false);
@@ -302,21 +290,55 @@ const ContractorProfile = () => {
 
             <div className="contractor-avatar-section">
               <div className="contractor-avatar-preview">
-                <img
-                  src={getAvatarUrl()}
-                  alt="Avatar"
-                  onError={(e) => {
-                    e.target.src = Avatar;
+                {getAvatarUrl() ? (
+                  <img
+                    src={getAvatarUrl()}
+                    alt="Avatar"
+                    onError={(e) => {
+                      // Jeśli zdjęcie się nie ładuje, pokaż ikonę SVG
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: "50%",
+                      objectFit: "cover"
+                    }}
+                  />
+                ) : null}
+                <div
+                  style={{
+                    display: getAvatarUrl() ? 'none' : 'flex',
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: "50%",
+                    backgroundColor: "#f97316",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    position: getAvatarUrl() ? 'absolute' : 'static',
+                    top: 0,
+                    left: 0
                   }}
-                />
+                >
+                  <svg
+                    width="60"
+                    height="60"
+                    viewBox="0 0 24 24"
+                    fill="white"
+                  >
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
                 <label className="contractor-avatar-upload">
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleAvatarChange}
                     style={{ display: "none" }}
+                    disabled={saving}
                   />
-                  Zmień zdjęcie
+                  {saving ? "Uploading..." : "Zmień zdjęcie"}
                 </label>
               </div>
             </div>

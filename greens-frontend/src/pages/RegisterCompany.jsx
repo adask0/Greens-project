@@ -33,87 +33,102 @@ const RegisterCompany = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  if (formData.password !== formData.password_confirmation) {
+    setError("Hasła nie są identyczne");
+    setLoading(false);
+    return;
+  }
 
-    if (formData.password !== formData.password_confirmation) {
-      setError("Hasła nie są identyczne");
-      setLoading(false);
-      return;
-    }
+  try {
+    // Krok 1: Rejestracja firmy
+    const registrationData = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      password_confirmation: formData.password_confirmation,
+      phone: formData.phone,
+      address: formData.address,
+      city: formData.city,
+      nip: formData.nip,
+      status: "dostępny",
+      is_active: true,
+      subscription: "1 mies.",
+      subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+    };
 
-    try {
-      // Krok 1: Rejestracja firmy
-      const registrationData = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        password_confirmation: formData.password_confirmation,
-        phone: formData.phone,
-        address: formData.address,
-        city: formData.city,
-        nip: formData.nip,
-        status: "dostępny",
-        is_active: true,
-        subscription: "1 mies.",
-        subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split("T")[0],
-      };
+    const response = await api.post("/register-company", registrationData);
 
-      const response = await api.post("/register-company", registrationData);
+    if (response.data.token) {
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("company", JSON.stringify(response.data.company));
+      api.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
 
-      if (response.data.token) {
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("company", JSON.stringify(response.data.company));
-        api.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
+      // Krok 2: Upload awatara jeśli wybrano plik - używamy tego samego endpointa co w panelu
+      if (avatarFile) {
+        try {
+          const formData = new FormData();
+          formData.append('avatar', avatarFile);
 
-        // Krok 2: Upload awatara jeśli wybrano plik
-        if (avatarFile) {
-          try {
-            const formData = new FormData();
-            formData.append('avatar', avatarFile);
+          // Użyj tego samego endpointa co w panelu kontrahenta
+          const avatarResponse = await fetch('https://greens.org.pl/backend.greens.org.pl/public/upload_avatar.php', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${response.data.token}`
+            },
+            body: formData
+          });
 
-            await api.post('/contractor/profile/avatar', formData, {
-              headers: {
-                'Content-Type': 'multipart/form-data',
-              },
-            });
+          const avatarData = await avatarResponse.json();
+          console.log('Avatar upload response during registration:', avatarData);
 
-            console.log('Avatar uploaded successfully');
-          } catch (avatarError) {
-            console.error('Error uploading avatar:', avatarError);
-            // Nie przerywamy procesu rejestracji jeśli upload awatara się nie udał
+          if (avatarData.success) {
+            // Aktualizuj dane w localStorage z nowym avatarem
+            const companyData = JSON.parse(localStorage.getItem("company") || "{}");
+            companyData.avatar = avatarData.avatar;
+            companyData.avatar_url = avatarData.avatar_url;
+            localStorage.setItem("company", JSON.stringify(companyData));
+          } else {
+            console.error('Avatar upload failed:', avatarData.message);
           }
+
+        } catch (avatarError) {
+          console.error('Error uploading avatar during registration:', avatarError);
+          // Nie przerywamy procesu rejestracji jeśli upload awatara się nie udał
         }
-
-        // Pokazuj loading przez 1.5 sekundy dla lepszego UX
-        setTimeout(() => {
-          window.location.href = "/contractor";
-        }, 1500);
-      } else {
-        alert("Firma została zarejestrowana! Teraz możesz się zalogować.");
-        window.location.href = "/login";
       }
-    } catch (error) {
-      console.error("Registration error:", error);
 
-      if (error.response?.data?.errors) {
-        const errors = error.response.data.errors;
-        const errorMessages = Object.values(errors).flat().join(", ");
-        setError(errorMessages);
-      } else {
-        setError(
-          error.response?.data?.message ||
-            "Błąd rejestracji. Sprawdź dane i spróbuj ponownie."
-        );
-      }
-      setLoading(false);
+      // Pokazuj loading przez 1.5 sekundy dla lepszego UX
+      setTimeout(() => {
+        window.location.href = "/contractor";
+      }, 1500);
+    } else {
+      alert("Firma została zarejestrowana! Teraz możesz się zalogować.");
+      window.location.href = "/login";
     }
-  };
+  } catch (error) {
+    console.error("Registration error:", error);
+
+    if (error.response?.data?.errors) {
+      const errors = error.response.data.errors;
+      const errorMessages = Object.values(errors).flat().join(", ");
+      setError(errorMessages);
+    } else {
+      setError(
+        error.response?.data?.message ||
+          "Błąd rejestracji. Sprawdź dane i spróbuj ponownie."
+      );
+    }
+    setLoading(false);
+  }
+};
+
 
   const handleChange = (e) => {
     setFormData({
@@ -309,7 +324,7 @@ const RegisterCompany = () => {
 
           <form onSubmit={handleSubmit}>
             {/* Ukryty input dla awatara */}
-            <input
+            {/* <input
               id="avatar-input"
               type="file"
               accept="image/*"
@@ -318,7 +333,6 @@ const RegisterCompany = () => {
               disabled={loading}
             />
 
-            {/* Nazwa firmy z awatarem */}
             <div style={{ marginBottom: "1.5rem" }}>
               <label style={labelStyles}>Nazwa firmy:</label>
               <div style={{
@@ -413,7 +427,7 @@ const RegisterCompany = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             <div
               style={{
@@ -423,6 +437,18 @@ const RegisterCompany = () => {
                 marginBottom: "1.5rem",
               }}
             >
+                <div style={{ flex: 1 }}>
+                <label style={labelStyles}>Nazwa firmy:</label>
+                  <input
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="PHU BUD PERFECT"
+                    style={inputStyles}
+                    required
+                    disabled={loading}
+                  />
+                </div>
               <div style={{ flex: 1 }}>
                 <label style={labelStyles}>E-mail:</label>
                 <input
@@ -431,19 +457,6 @@ const RegisterCompany = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="kontakt@firma.pl"
-                  style={inputStyles}
-                  required
-                  disabled={loading}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={labelStyles}>Telefon:</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="+48 123 456 789"
                   style={inputStyles}
                   required
                   disabled={loading}
@@ -471,13 +484,14 @@ const RegisterCompany = () => {
                   disabled={loading}
                 />
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={labelStyles}>Adres:</label>
+                <div style={{ flex: 1 }}>
+                <label style={labelStyles}>Telefon:</label>
                 <input
-                  name="address"
-                  value={formData.address}
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleChange}
-                  placeholder="ul. Przykładowa 123"
+                  placeholder="+48 123 456 789"
                   style={inputStyles}
                   required
                   disabled={loading}
@@ -505,7 +519,16 @@ const RegisterCompany = () => {
                 />
               </div>
               <div style={{ flex: 1 }}>
-                {/* Puste miejsce dla wyrównania */}
+                <label style={labelStyles}>Adres:</label>
+                <input
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="ul. Przykładowa 123"
+                  style={inputStyles}
+                  required
+                  disabled={loading}
+                />
               </div>
             </div>
 

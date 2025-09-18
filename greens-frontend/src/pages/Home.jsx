@@ -429,7 +429,7 @@ const Home = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="Karolina"
+                placeholder="Podaj swoje imię"
                 className="home-contact-form-input"
                 required
               />
@@ -452,7 +452,7 @@ const Home = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                placeholder="example@gmail.com"
+                placeholder="greenspolska@gmail.pl"
                 className="home-contact-form-input"
                 required
               />
